@@ -1,6 +1,6 @@
 import PayrollIndonesiaV23 from '../payroll/PayrollIndonesiaV23';
 import RoleDashboard from './RoleDashboard';
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client';
 import { signIn, signOut } from '../../../lib/auth';
 import { rupiah } from '../../../lib/hris';
@@ -421,43 +421,6 @@ function Login(p:{email:string;pin:string;setEmail:(v:string)=>void;setPin:(v:st
  return <div className="login-wrap"><div className="login-card"><div className="brand center"><div className="brand-mark"><img src={moonLogo} alt="MoonXprojecT" /></div><div><b>MoonXprojecT</b><small>People Platform</small></div></div><h1>Selamat datang kembali</h1><p>Masuk ke dashboard HR & payroll.</p><form onSubmit={p.onSubmit}><label>Email<input value={p.email} onChange={e=>p.setEmail(e.target.value)} required/></label><label>PIN / Password<input type="password" value={p.pin} onChange={e=>p.setPin(e.target.value)} required/></label>{p.error&&<div className="form-error">{p.error}</div>}<button className="primary full" disabled={p.loading}>{p.loading?'Memeriksa…':'Masuk ke Dashboard'}</button></form><small className="security-note">Gunakan email dan password Supabase Auth yang diberikan HR.</small></div></div>
 }
 function Heading({title,desc,action,onAction}:{title:string;desc:string;action?:string;onAction?:()=>void}){return <div className="page-heading"><div><h1>{title}</h1><p>{desc}</p></div>{action&&<button className="primary" onClick={onAction}>{action}</button>}</div>}
-const active=employees.filter(k=>k.status_aktif!==false).length;
- const inactive=Math.max(0,employees.length-active);
- const absent=Math.max(0,employees.length-present-late);
- const attendanceRate=employees.length?Math.min(100,Math.round((present/Math.max(1,employees.length))*100)):0;
- const recent=attendance.slice(0,6);
- const dept=employees.reduce<Record<string,number>>((a,k)=>{const d=k.departemen||'Belum diatur';a[d]=(a[d]||0)+1;return a},{});
- const deptRows=Object.entries(dept).sort((a,b)=>b[1]-a[1]).slice(0,5);
- const maxDept=Math.max(1,...deptRows.map(x=>x[1]));
- return <div className="executive-dashboard">
-  <Heading title="HR Command Center" desc="Ringkasan workforce, attendance, dan payroll dalam satu pusat kendali." action="Tambah Karyawan" onAction={()=>onNavigate('employee-add')}/>
-  <div className="command-strip">
-   <div><span className="eyebrow">OPERATIONAL STATUS</span><strong>Sistem HR aktif</strong><small>Data tersinkron dari database</small></div>
-   <div className="strip-meta"><span className="status green">Operational</span><span>Update otomatis saat halaman dimuat</span></div>
-  </div>
-  <div className="stat-grid executive-stats">
-   <Stat title="Total Karyawan" value={String(employees.length)} hint={`${active} aktif · ${inactive} nonaktif`} icon="users"/>
-   <Stat title="Kehadiran Hari Ini" value={`${attendanceRate}%`} hint={`${present} hadir · ${late} terlambat`} icon="check"/>
-   <Stat title="Payroll Workforce" value={money(payroll)} hint="Total gaji pokok" icon="payroll"/>
-   <Stat title="Record Absensi" value={String(attendance.length)} hint="Data tersimpan" icon="clock"/>
-  </div>
-  <div className="dashboard-grid-top">
-   <div className="panel executive-chart">
-    <div className="panel-head"><div><span className="eyebrow">WORKFORCE</span><h2>Komposisi Workforce</h2><p>Distribusi karyawan berdasarkan departemen.</p></div><button className="link-btn" onClick={()=>onNavigate('employees')}>Buka master</button></div>
-    <div className="department-bars">{deptRows.length?deptRows.map(([name,count])=><div className="dept-row" key={name}><div className="dept-label"><span>{name}</span><b>{count}</b></div><div className="progress"><span style={{width:`${Math.round(count/maxDept*100)}%`}}/></div></div>):<div className="empty-module"><h3>Belum ada data workforce</h3><p>Tambahkan karyawan untuk melihat distribusi.</p></div>}</div>
-   </div>
-   <div className="panel attendance-health">
-    <div className="panel-head"><div><span className="eyebrow">TODAY</span><h2>Attendance Health</h2><p>Status kehadiran hari ini.</p></div></div>
-    <div className="health-ring" style={{'--rate':`${attendanceRate*3.6}deg`} as CSSProperties}><div><strong>{attendanceRate}%</strong><small>Hadir</small></div></div>
-    <div className="health-legend"><div><i className="dot present"/><span>Hadir</span><b>{present}</b></div><div><i className="dot late"/><span>Terlambat</span><b>{late}</b></div><div><i className="dot absent"/><span>Belum tercatat</span><b>{absent}</b></div></div>
-   </div>
-  </div>
-  <div className="dashboard-grid-bottom">
-   <div className="panel"><div className="panel-head"><div><span className="eyebrow">LIVE FEED</span><h2>Aktivitas Absensi Terbaru</h2><p>Record terbaru yang masuk ke sistem.</p></div><button className="link-btn" onClick={()=>onNavigate('attendance')}>Lihat semua</button></div><AttendanceMini rows={recent}/></div>
-   <div className="panel quick executive-quick"><div className="panel-head"><div><span className="eyebrow">SHORTCUTS</span><h2>Akses cepat</h2><p>Masuk langsung ke proses HR utama.</p></div></div><Quick label="Tambah karyawan" icon="users" onClick={()=>onNavigate('employee-add')}/><Quick label="Jadwal kerja" icon="calendar" onClick={()=>onNavigate('schedule')}/><Quick label="Payroll" icon="payroll" onClick={()=>onNavigate('payroll')}/><Quick label="Pengajuan cuti" icon="request" onClick={()=>onNavigate('leave-request')}/></div>
-  </div>
- </div>
-
 function Stat({title,value,hint,icon}:{title:string;value:string;hint:string;icon:string}){return <div className="stat-card"><div className="stat-icon"><Icon name={icon}/></div><div><span>{title}</span><strong>{value}</strong><small>{hint}</small></div></div>}
 function Quick({label,icon,onClick}:{label:string;icon:string;onClick:()=>void}){return <button className="quick-action" onClick={onClick}><span className="quick-icon"><Icon name={icon}/></span>{label}<span aria-hidden="true">›</span></button>}
 function AttendanceMini({rows}:{rows:Absensi[]}){return <div className="table-wrap"><table><thead><tr><th>Karyawan</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr></thead><tbody>{rows.length?rows.map((a,i)=><tr key={a.id||i}><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td className="green">{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td><Status value={a.status||'Hadir'}/></td></tr>):<Empty cols={5}/>}</tbody></table></div>}
