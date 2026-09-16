@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { isSupabaseConfigured, supabase } from './lib/supabase/client';
-import { signIn, signOut } from './lib/auth';
+import { signIn } from './lib/auth';
 
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import EmployeeRegister from './pages/EmployeeRegister/EmployeeRegister';
@@ -28,6 +28,7 @@ const HR_ROLES: HrRole[] = [
 
 /* =========================================================
    RESOLVE ACCOUNT
+   Menentukan halaman berdasarkan email + role
    ========================================================= */
 
 async function resolveAccount(): Promise<{
@@ -49,9 +50,9 @@ async function resolveAccount(): Promise<{
 
   const email = user.email.trim().toLowerCase();
 
-  /* -------------------------------------------------------
-     1. CEK ROLE HR / ADMIN
-     ------------------------------------------------------- */
+  /* =======================================================
+     1. CEK AKUN HR / ADMIN
+     ======================================================= */
 
   const { data: profile } = await supabase
     .from('hris_users')
@@ -70,22 +71,27 @@ async function resolveAccount(): Promise<{
     };
   }
 
-  /* -------------------------------------------------------
-     2. CEK DATA KARYAWAN
-     ------------------------------------------------------- */
+  /* =======================================================
+     2. CEK AKUN KARYAWAN
+     ======================================================= */
 
   const { data: employee } = await supabase
     .from('karyawan')
-    .select('id,id_karyawan,nama,email,auth_user_id,status_aktif,status_karyawan')
-    .or(`auth_user_id.eq.${user.id},email.ilike.${email}`)
+    .select(
+      'id,id_karyawan,nama,email,auth_user_id,status_aktif,status_karyawan'
+    )
+    .or(
+      `auth_user_id.eq.${user.id},email.ilike.${email}`
+    )
     .limit(1)
     .maybeSingle();
 
   if (employee) {
     /*
-     * Jika email cocok tetapi auth_user_id belum terhubung,
-     * sistem mencoba menghubungkan otomatis.
+     * Jika email akun sama dengan email master karyawan,
+     * otomatis hubungkan auth_user_id.
      */
+
     if (
       !employee.auth_user_id &&
       employee.email &&
@@ -107,9 +113,10 @@ async function resolveAccount(): Promise<{
   }
 
   /*
-   * Akun Supabase ada tetapi belum ditemukan di master
-   * karyawan.
+   * Akun Supabase ada tetapi belum ditemukan
+   * pada master karyawan.
    */
+
   return {
     view: 'employee',
     role: 'Karyawan',
@@ -123,18 +130,17 @@ async function resolveAccount(): Promise<{
 
 export default function App() {
   const [view, setView] = useState<View>('login');
-  const [role, setRole] = useState('');
-  const [checking, setChecking] = useState(true);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const [checking, setChecking] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  /* -------------------------------------------------------
-     ROUTING
-     ------------------------------------------------------- */
+  /* =======================================================
+     NAVIGATION
+     ======================================================= */
 
   const go = (next: View) => {
     setError('');
@@ -148,24 +154,9 @@ export default function App() {
     });
   };
 
-  /* -------------------------------------------------------
-     ROUTE SESUAI AKUN
-     ------------------------------------------------------- */
-
-  const routeByAccount = async () => {
-    const account = await resolveAccount();
-
-    setRole(account.role);
-    setView(account.view);
-
-    window.location.hash = `/${account.view}`;
-
-    return account;
-  };
-
-  /* -------------------------------------------------------
-     BOOT APPLICATION
-     ------------------------------------------------------- */
+  /* =======================================================
+     INITIAL SESSION CHECK
+     ======================================================= */
 
   useEffect(() => {
     let active = true;
@@ -173,43 +164,48 @@ export default function App() {
     const boot = async () => {
       setChecking(true);
 
-      /*
-       * Aplikasi selalu dimulai dari LOGIN jika tidak ada
-       * session aktif.
-       */
+      /* ---------------------------------------------------
+         SUPABASE BELUM DIKONFIGURASI
+         --------------------------------------------------- */
 
       if (!isSupabaseConfigured) {
         if (active) {
           setView('login');
-          setRole('');
           setChecking(false);
+          window.location.hash = '/login';
         }
 
         return;
       }
 
+      /* ---------------------------------------------------
+         CEK SESSION
+         --------------------------------------------------- */
+
       const { data } = await supabase.auth.getSession();
 
       if (!active) return;
 
+      /* ---------------------------------------------------
+         TIDAK ADA SESSION → LOGIN
+         --------------------------------------------------- */
+
       if (!data.session) {
         setView('login');
-        setRole('');
         window.location.hash = '/login';
         setChecking(false);
+
         return;
       }
 
-      /*
-       * Session masih aktif.
-       * Tentukan halaman berdasarkan role.
-       */
+      /* ---------------------------------------------------
+         ADA SESSION → TENTUKAN ROLE
+         --------------------------------------------------- */
 
       const account = await resolveAccount();
 
       if (!active) return;
 
-      setRole(account.role);
       setView(account.view);
 
       window.location.hash = `/${account.view}`;
@@ -219,52 +215,49 @@ export default function App() {
 
     void boot();
 
-    /* -----------------------------------------------------
+    /* =====================================================
        AUTH STATE LISTENER
-       ----------------------------------------------------- */
+       ===================================================== */
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!active) return;
-
-        /*
-         * LOGOUT
-         */
-
-        if (event === 'SIGNED_OUT' || !session) {
-          setView('login');
-          setRole('');
-          setEmail('');
-          setPassword('');
-          setError('');
-
-          window.location.hash = '/login';
-
-          setChecking(false);
-
-          return;
-        }
-
-        /*
-         * LOGIN BERHASIL
-         */
-
-        if (event === 'SIGNED_IN') {
-          const account = await resolveAccount();
-
+    const { data: listener } =
+      supabase.auth.onAuthStateChange(
+        async (event, session) => {
           if (!active) return;
 
-          setRole(account.role);
-          setView(account.view);
-          setPassword('');
-          setError('');
+          /* -----------------------------------------------
+             LOGOUT
+             ----------------------------------------------- */
 
-          window.location.hash = `/${account.view}`;
+          if (event === 'SIGNED_OUT' || !session) {
+            setView('login');
+            setEmail('');
+            setPassword('');
+            setError('');
+            setChecking(false);
 
-          setChecking(false);
+            window.location.hash = '/login';
+
+            return;
+          }
+
+          /* -----------------------------------------------
+             LOGIN BERHASIL
+             ----------------------------------------------- */
+
+          if (event === 'SIGNED_IN') {
+            const account = await resolveAccount();
+
+            if (!active) return;
+
+            setView(account.view);
+            setPassword('');
+            setError('');
+            setChecking(false);
+
+            window.location.hash = `/${account.view}`;
+          }
         }
-      },
-    );
+      );
 
     return () => {
       active = false;
@@ -272,9 +265,9 @@ export default function App() {
     };
   }, []);
 
-  /* -------------------------------------------------------
+  /* =======================================================
      LOGIN
-     ------------------------------------------------------- */
+     ======================================================= */
 
   const login = async (event: FormEvent) => {
     event.preventDefault();
@@ -283,7 +276,7 @@ export default function App() {
 
     if (!isSupabaseConfigured) {
       setError(
-        'Supabase belum dikonfigurasi. Periksa VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY.',
+        'Supabase belum dikonfigurasi. Periksa VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY.'
       );
 
       return;
@@ -299,30 +292,26 @@ export default function App() {
 
     setLoading(true);
 
-    const { data, error: loginError } = await signIn(
-      cleanEmail,
-      password,
-    );
+    const { data, error: loginError } =
+      await signIn(cleanEmail, password);
 
     if (loginError || !data.user) {
       setLoading(false);
 
       setError(
         loginError?.message ||
-          'Email atau password tidak valid.',
+          'Email atau password tidak valid.'
       );
 
       return;
     }
 
-    /*
-     * Setelah autentikasi berhasil,
-     * baca role dan tentukan dashboard.
-     */
+    /* ---------------------------------------------------
+       SETELAH LOGIN → BACA ROLE
+       --------------------------------------------------- */
 
     const account = await resolveAccount();
 
-    setRole(account.role);
     setView(account.view);
 
     setLoading(false);
@@ -332,51 +321,40 @@ export default function App() {
     window.location.hash = `/${account.view}`;
   };
 
-  /* -------------------------------------------------------
-     LOGOUT
-     ------------------------------------------------------- */
-
-  const logout = async () => {
-    await signOut();
-
-    setView('login');
-    setRole('');
-    setEmail('');
-    setPassword('');
-    setError('');
-
-    window.location.hash = '/login';
-  };
-
-  /* -------------------------------------------------------
-     SECURITY CHECK
-     ------------------------------------------------------- */
+  /* =======================================================
+     LOADING / SESSION CHECK
+     ======================================================= */
 
   if (checking) {
     return (
       <div className="unified-login-page">
         <div className="unified-login-card compact">
-          <div className="unified-logo">M</div>
+
+          <div className="unified-logo">
+            M
+          </div>
 
           <div className="unified-loading">
             Memeriksa sesi keamanan...
           </div>
+
         </div>
       </div>
     );
   }
 
-  /* -------------------------------------------------------
-     APPLICATION
-     ------------------------------------------------------- */
+  /* =======================================================
+     RENDER APPLICATION
+     ======================================================= */
 
   return (
     <ErrorBoundary>
+
       <div className="app-root">
 
-        {/* ================================================
+        {/* =================================================
             LOGIN
-            ================================================ */}
+            ================================================= */}
 
         {view === 'login' && (
           <LoginScreen
@@ -391,35 +369,38 @@ export default function App() {
           />
         )}
 
-        {/* ================================================
+        {/* =================================================
             REGISTRASI KARYAWAN
-            ================================================ */}
+            ================================================= */}
 
         {view === 'register' && (
           <div className="public-page">
+
             <EmployeeRegister
               onBack={() => go('login')}
             />
+
           </div>
         )}
 
-        {/* ================================================
-            DASHBOARD HR / ADMIN
-            ================================================ */}
+        {/* =================================================
+            DASHBOARD HR
+            ================================================= */}
 
         {view === 'admin' && (
           <AdminDashboard />
         )}
 
-        {/* ================================================
+        {/* =================================================
             PORTAL KARYAWAN
-            ================================================ */}
+            ================================================= */}
 
         {view === 'employee' && (
           <EmployeePortal />
         )}
 
       </div>
+
     </ErrorBoundary>
   );
 }
@@ -452,9 +433,9 @@ function LoginScreen({
 
       <section className="unified-login-card">
 
-        {/* =============================================
+        {/* =================================================
             BRAND
-            ============================================= */}
+            ================================================= */}
 
         <div className="unified-brand">
 
@@ -463,6 +444,7 @@ function LoginScreen({
           </div>
 
           <div>
+
             <strong>
               MoonXprojecT
             </strong>
@@ -470,13 +452,14 @@ function LoginScreen({
             <small>
               Human Resources Information System
             </small>
+
           </div>
 
         </div>
 
-        {/* =============================================
+        {/* =================================================
             HEADING
-            ============================================= */}
+            ================================================= */}
 
         <div className="unified-login-heading">
 
@@ -495,9 +478,9 @@ function LoginScreen({
 
         </div>
 
-        {/* =============================================
+        {/* =================================================
             ERROR
-            ============================================= */}
+            ================================================= */}
 
         {error && (
           <div className="unified-login-error">
@@ -505,9 +488,9 @@ function LoginScreen({
           </div>
         )}
 
-        {/* =============================================
-            LOGIN FORM
-            ============================================= */}
+        {/* =================================================
+            FORM
+            ================================================= */}
 
         <form
           onSubmit={onSubmit}
@@ -557,18 +540,16 @@ function LoginScreen({
             className="unified-login-button"
             disabled={loading}
           >
-
             {loading
               ? 'Memverifikasi...'
               : 'Masuk ke Sistem'}
-
           </button>
 
         </form>
 
-        {/* =============================================
+        {/* =================================================
             REGISTER
-            ============================================= */}
+            ================================================= */}
 
         <div className="unified-login-register">
 
@@ -586,9 +567,9 @@ function LoginScreen({
 
         </div>
 
-        {/* =============================================
-            SECURITY INFO
-            ============================================= */}
+        {/* =================================================
+            SECURITY
+            ================================================= */}
 
         <div className="unified-login-security">
 
@@ -597,6 +578,7 @@ function LoginScreen({
           </span>
 
           <div>
+
             <strong>
               Secure HR Access
             </strong>
@@ -605,6 +587,7 @@ function LoginScreen({
               Akses otomatis ditentukan berdasarkan
               role akun Anda.
             </small>
+
           </div>
 
         </div>
