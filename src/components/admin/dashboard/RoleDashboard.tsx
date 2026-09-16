@@ -1,4 +1,50 @@
-import type { Karyawan, Absensi } from '../../../types';
+type Karyawan = {
+  id: string;
+  id_karyawan?: string;
+  nama: string;
+  jabatan?: string;
+  email?: string;
+  no_telp?: string;
+  alamat_rumah?: string;
+  gaji_pokok?: number;
+  nik_ktp?: string;
+  departemen?: string;
+  status_aktif?: boolean;
+  tanggal_masuk?: string;
+  status_karyawan?: string;
+  role?: string;
+};
+
+type Absensi = {
+  id: string;
+  karyawan_id?: string;
+  id_karyawan?: string;
+  nama?: string;
+  jabatan?: string;
+  tanggal?: string;
+  jam_masuk?: string;
+  jam_pulang?: string;
+  total_jam?: string;
+  status?: string;
+  lokasi?: string;
+  foto?: string;
+  selfie_masuk?: string;
+  keterlambatan_menit?: number;
+  lembur_menit?: number;
+  lokasi_masuk?: string;
+};
+
+type DashboardRole = 'Super Admin' | 'Admin' | 'HRD' | string;
+
+interface RoleDashboardProps {
+  role: DashboardRole;
+  employees: Karyawan[];
+  attendance: Absensi[];
+  present: number;
+  late: number;
+  payroll: number;
+  onNavigate: (menu: string) => void;
+}
 
 type DashboardRole = 'Super Admin' | 'Admin' | 'HRD' | string;
 
