@@ -34,17 +34,6 @@ type Absensi = {
   lokasi_masuk?: string;
 };
 
-type DashboardRole = 'Super Admin' | 'Admin' | 'HRD' | string;
-
-interface RoleDashboardProps {
-  role: DashboardRole;
-  employees: Karyawan[];
-  attendance: Absensi[];
-  present: number;
-  late: number;
-  payroll: number;
-  onNavigate: (menu: string) => void;
-}
 
 type DashboardRole = 'Super Admin' | 'Admin' | 'HRD' | string;
 
