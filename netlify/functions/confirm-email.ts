@@ -19,13 +19,11 @@ export const handler = async (event: NetlifyEvent) => {
   if (event.httpMethod !== 'POST') {
     return json(405, {
       success: false,
-      stage: 'method',
       error: 'Method not allowed',
     });
   }
 
   try {
-    // 1. ENVIRONMENT
     const supabaseUrl =
       process.env.SUPABASE_URL ||
       process.env.VITE_SUPABASE_URL;
@@ -33,25 +31,14 @@ export const handler = async (event: NetlifyEvent) => {
     const serviceRoleKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl) {
+    if (!supabaseUrl || !serviceRoleKey) {
       return json(500, {
         success: false,
-        stage: 'environment',
         error:
-          'SUPABASE_URL / VITE_SUPABASE_URL tidak tersedia di Netlify.',
+          'Supabase environment variables belum dikonfigurasi di Netlify.',
       });
     }
 
-    if (!serviceRoleKey) {
-      return json(500, {
-        success: false,
-        stage: 'environment',
-        error:
-          'SUPABASE_SERVICE_ROLE_KEY tidak tersedia di Netlify.',
-      });
-    }
-
-    // 2. AUTHORIZATION
     const authorization =
       event.headers?.authorization ||
       event.headers?.Authorization ||
@@ -64,12 +51,10 @@ export const handler = async (event: NetlifyEvent) => {
     if (!token) {
       return json(401, {
         success: false,
-        stage: 'authorization',
         error: 'Sesi login tidak ditemukan.',
       });
     }
 
-    // 3. SUPABASE ADMIN CLIENT
     const supabase = createClient(
       supabaseUrl,
       serviceRoleKey,
@@ -81,7 +66,10 @@ export const handler = async (event: NetlifyEvent) => {
       }
     );
 
-    // 4. VALIDATE CURRENT USER
+    // =====================================================
+    // VALIDASI USER HR
+    // =====================================================
+
     const {
       data: authData,
       error: authError,
@@ -90,7 +78,6 @@ export const handler = async (event: NetlifyEvent) => {
     if (authError || !authData.user) {
       return json(401, {
         success: false,
-        stage: 'auth_user',
         error:
           authError?.message ||
           'Sesi login tidak valid.',
@@ -103,12 +90,10 @@ export const handler = async (event: NetlifyEvent) => {
     if (!currentEmail) {
       return json(403, {
         success: false,
-        stage: 'auth_email',
         error: 'Email akun HR tidak ditemukan.',
       });
     }
 
-    // 5. CHECK HRIS USER
     const {
       data: hrUser,
       error: hrError,
@@ -121,28 +106,22 @@ export const handler = async (event: NetlifyEvent) => {
     if (hrError) {
       return json(500, {
         success: false,
-        stage: 'hris_users',
         error: hrError.message,
-        code: hrError.code,
-        details: hrError.details,
-        hint: hrError.hint,
+        stage: 'hris_users',
       });
     }
 
     if (!hrUser) {
       return json(403, {
         success: false,
-        stage: 'hris_users',
         error:
           'Akun Anda belum terdaftar sebagai pengguna HRIS.',
-        email: currentEmail,
       });
     }
 
     if (hrUser.status !== 'Aktif') {
       return json(403, {
         success: false,
-        stage: 'hris_users',
         error: 'Akun HR Anda belum aktif.',
       });
     }
@@ -156,25 +135,25 @@ export const handler = async (event: NetlifyEvent) => {
     if (!allowedRoles.includes(hrUser.role)) {
       return json(403, {
         success: false,
-        stage: 'role',
         error:
           'Role Anda tidak memiliki izin untuk mengonfirmasi email karyawan.',
-        role: hrUser.role,
       });
     }
 
-    // 6. REQUEST BODY
+    // =====================================================
+    // REQUEST BODY
+    // =====================================================
+
     let body: {
       employee_id?: string;
-    } = {};
+    };
 
     try {
       body = JSON.parse(event.body || '{}');
     } catch {
       return json(400, {
         success: false,
-        stage: 'body',
-        error: 'Format request JSON tidak valid.',
+        error: 'Format request tidak valid.',
       });
     }
 
@@ -184,19 +163,25 @@ export const handler = async (event: NetlifyEvent) => {
     if (!employeeId) {
       return json(400, {
         success: false,
-        stage: 'body',
         error: 'ID karyawan tidak ditemukan.',
       });
     }
 
-    // 7. GET EMPLOYEE
+    // =====================================================
+    // AMBIL DATA KARYAWAN
+    // =====================================================
+    // PENTING:
+    // email_terverifikasi DIHAPUS karena kolom tersebut
+    // memang tidak ada di database.
+    // =====================================================
+
     const {
       data: employee,
       error: employeeError,
     } = await supabase
       .from('karyawan')
       .select(
-        'id,id_karyawan,nama,email,auth_user_id,email_terverifikasi'
+        'id,id_karyawan,nama,email,auth_user_id'
       )
       .eq('id', employeeId)
       .maybeSingle();
@@ -208,14 +193,12 @@ export const handler = async (event: NetlifyEvent) => {
         error: employeeError.message,
         code: employeeError.code,
         details: employeeError.details,
-        hint: employeeError.hint,
       });
     }
 
     if (!employee) {
       return json(404, {
         success: false,
-        stage: 'karyawan_select',
         error: 'Data karyawan tidak ditemukan.',
       });
     }
@@ -223,7 +206,6 @@ export const handler = async (event: NetlifyEvent) => {
     if (!employee.email) {
       return json(400, {
         success: false,
-        stage: 'employee_email',
         error: 'Karyawan belum memiliki email.',
       });
     }
@@ -231,13 +213,15 @@ export const handler = async (event: NetlifyEvent) => {
     if (!employee.auth_user_id) {
       return json(400, {
         success: false,
-        stage: 'auth_user_id',
         error:
           'Akun login karyawan belum terhubung.',
       });
     }
 
-    // 8. CONFIRM SUPABASE AUTH EMAIL
+    // =====================================================
+    // KONFIRMASI EMAIL DI SUPABASE AUTH
+    // =====================================================
+
     const {
       error: confirmError,
     } = await supabase.auth.admin.updateUserById(
@@ -253,32 +237,13 @@ export const handler = async (event: NetlifyEvent) => {
         stage: 'auth_update',
         error: confirmError.message,
         status: confirmError.status,
-        name: confirmError.name,
       });
     }
 
-    // 9. UPDATE KARYAWAN
-    const {
-      error: updateError,
-    } = await supabase
-      .from('karyawan')
-      .update({
-        email_terverifikasi: true,
-      })
-      .eq('id', employee.id);
+    // =====================================================
+    // BERHASIL
+    // =====================================================
 
-    if (updateError) {
-      return json(500, {
-        success: false,
-        stage: 'karyawan_update',
-        error: updateError.message,
-        code: updateError.code,
-        details: updateError.details,
-        hint: updateError.hint,
-      });
-    }
-
-    // 10. SUCCESS
     return json(200, {
       success: true,
       message:
@@ -289,15 +254,13 @@ export const handler = async (event: NetlifyEvent) => {
     });
 
   } catch (error: unknown) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : String(error);
-
     return json(500, {
       success: false,
       stage: 'unexpected',
-      error: message,
+      error:
+        error instanceof Error
+          ? error.message
+          : String(error),
     });
   }
 };
