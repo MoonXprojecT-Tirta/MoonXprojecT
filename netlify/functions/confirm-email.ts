@@ -6,58 +6,70 @@ type NetlifyEvent = {
   body?: string | null;
 };
 
+const json = (statusCode: number, data: unknown) => ({
+  statusCode,
+  headers: {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
+  },
+  body: JSON.stringify(data),
+});
+
 export const handler = async (event: NetlifyEvent) => {
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        error: 'Method not allowed',
-      }),
-    };
+    return json(405, {
+      success: false,
+      stage: 'method',
+      error: 'Method not allowed',
+    });
   }
 
   try {
+    // 1. ENVIRONMENT
     const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.VITE_SUPABASE_URL;
+      process.env.SUPABASE_URL ||
+      process.env.VITE_SUPABASE_URL;
 
-const serviceRoleKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceRoleKey) {
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY belum dikonfigurasi di Netlify.',
-        }),
-      };
+    const serviceRoleKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl) {
+      return json(500, {
+        success: false,
+        stage: 'environment',
+        error:
+          'SUPABASE_URL / VITE_SUPABASE_URL tidak tersedia di Netlify.',
+      });
     }
 
+    if (!serviceRoleKey) {
+      return json(500, {
+        success: false,
+        stage: 'environment',
+        error:
+          'SUPABASE_SERVICE_ROLE_KEY tidak tersedia di Netlify.',
+      });
+    }
+
+    // 2. AUTHORIZATION
     const authorization =
       event.headers?.authorization ||
       event.headers?.Authorization ||
       '';
 
-    const token = authorization.replace(/^Bearer\s+/i, '').trim();
+    const token = authorization
+      .replace(/^Bearer\s+/i, '')
+      .trim();
 
     if (!token) {
-      return {
-        statusCode: 401,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: 'Sesi login tidak ditemukan.',
-        }),
-      };
+      return json(401, {
+        success: false,
+        stage: 'authorization',
+        error: 'Sesi login tidak ditemukan.',
+      });
     }
 
+    // 3. SUPABASE ADMIN CLIENT
     const supabase = createClient(
       supabaseUrl,
       serviceRoleKey,
@@ -69,50 +81,34 @@ const serviceRoleKey =
       }
     );
 
-    /*
-     * ================================
-     * 1. VALIDASI USER HR
-     * ================================
-     */
-
+    // 4. VALIDATE CURRENT USER
     const {
       data: authData,
       error: authError,
     } = await supabase.auth.getUser(token);
 
     if (authError || !authData.user) {
-      return {
-        statusCode: 401,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: 'Sesi login tidak valid.',
-        }),
-      };
+      return json(401, {
+        success: false,
+        stage: 'auth_user',
+        error:
+          authError?.message ||
+          'Sesi login tidak valid.',
+      });
     }
 
     const currentEmail =
       authData.user.email?.trim() || '';
 
     if (!currentEmail) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: 'Email akun HR tidak ditemukan.',
-        }),
-      };
+      return json(403, {
+        success: false,
+        stage: 'auth_email',
+        error: 'Email akun HR tidak ditemukan.',
+      });
     }
 
-    /*
-     * ================================
-     * 2. CEK ROLE HR
-     * ================================
-     */
-
+    // 5. CHECK HRIS USER
     const {
       data: hrUser,
       error: hrError,
@@ -123,41 +119,32 @@ const serviceRoleKey =
       .maybeSingle();
 
     if (hrError) {
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: hrError.message,
-        }),
-      };
+      return json(500, {
+        success: false,
+        stage: 'hris_users',
+        error: hrError.message,
+        code: hrError.code,
+        details: hrError.details,
+        hint: hrError.hint,
+      });
     }
 
     if (!hrUser) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Akun Anda belum terdaftar sebagai pengguna HRIS.',
-        }),
-      };
+      return json(403, {
+        success: false,
+        stage: 'hris_users',
+        error:
+          'Akun Anda belum terdaftar sebagai pengguna HRIS.',
+        email: currentEmail,
+      });
     }
 
     if (hrUser.status !== 'Aktif') {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Akun HR Anda belum aktif.',
-        }),
-      };
+      return json(403, {
+        success: false,
+        stage: 'hris_users',
+        error: 'Akun HR Anda belum aktif.',
+      });
     }
 
     const allowedRoles = [
@@ -167,24 +154,16 @@ const serviceRoleKey =
     ];
 
     if (!allowedRoles.includes(hrUser.role)) {
-      return {
-        statusCode: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Role Anda tidak memiliki izin untuk mengonfirmasi email karyawan.',
-        }),
-      };
+      return json(403, {
+        success: false,
+        stage: 'role',
+        error:
+          'Role Anda tidak memiliki izin untuk mengonfirmasi email karyawan.',
+        role: hrUser.role,
+      });
     }
 
-    /*
-     * ================================
-     * 3. BACA REQUEST
-     * ================================
-     */
-
+    // 6. REQUEST BODY
     let body: {
       employee_id?: string;
     } = {};
@@ -192,39 +171,25 @@ const serviceRoleKey =
     try {
       body = JSON.parse(event.body || '{}');
     } catch {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: 'Format request tidak valid.',
-        }),
-      };
+      return json(400, {
+        success: false,
+        stage: 'body',
+        error: 'Format request JSON tidak valid.',
+      });
     }
 
     const employeeId =
       body.employee_id?.trim();
 
     if (!employeeId) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'ID karyawan tidak ditemukan.',
-        }),
-      };
+      return json(400, {
+        success: false,
+        stage: 'body',
+        error: 'ID karyawan tidak ditemukan.',
+      });
     }
 
-    /*
-     * ================================
-     * 4. CARI KARYAWAN
-     * ================================
-     */
-
+    // 7. GET EMPLOYEE
     const {
       data: employee,
       error: employeeError,
@@ -237,92 +202,62 @@ const serviceRoleKey =
       .maybeSingle();
 
     if (employeeError) {
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error: employeeError.message,
-        }),
-      };
+      return json(500, {
+        success: false,
+        stage: 'karyawan_select',
+        error: employeeError.message,
+        code: employeeError.code,
+        details: employeeError.details,
+        hint: employeeError.hint,
+      });
     }
 
     if (!employee) {
-      return {
-        statusCode: 404,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Data karyawan tidak ditemukan.',
-        }),
-      };
+      return json(404, {
+        success: false,
+        stage: 'karyawan_select',
+        error: 'Data karyawan tidak ditemukan.',
+      });
     }
 
     if (!employee.email) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Karyawan belum memiliki email.',
-        }),
-      };
+      return json(400, {
+        success: false,
+        stage: 'employee_email',
+        error: 'Karyawan belum memiliki email.',
+      });
     }
 
     if (!employee.auth_user_id) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            'Akun login karyawan belum terhubung.',
-        }),
-      };
+      return json(400, {
+        success: false,
+        stage: 'auth_user_id',
+        error:
+          'Akun login karyawan belum terhubung.',
+      });
     }
 
-    /*
-     * ================================
-     * 5. KONFIRMASI EMAIL SUPABASE AUTH
-     * ================================
-     */
-
+    // 8. CONFIRM SUPABASE AUTH EMAIL
     const {
       error: confirmError,
-    } =
-      await supabase.auth.admin.updateUserById(
-        employee.auth_user_id,
-        {
-          email_confirm: true,
-        }
-      );
+    } = await supabase.auth.admin.updateUserById(
+      employee.auth_user_id,
+      {
+        email_confirm: true,
+      }
+    );
 
     if (confirmError) {
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            confirmError.message ||
-            'Email gagal dikonfirmasi.',
-        }),
-      };
+      return json(500, {
+        success: false,
+        stage: 'auth_update',
+        error: confirmError.message,
+        status: confirmError.status,
+        name: confirmError.name,
+      });
     }
 
-    /*
-     * ================================
-     * 6. SIMPAN STATUS DI KARYAWAN
-     * ================================
-     */
-
+    // 9. UPDATE KARYAWAN
     const {
       error: updateError,
     } = await supabase
@@ -333,52 +268,36 @@ const serviceRoleKey =
       .eq('id', employee.id);
 
     if (updateError) {
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          error:
-            updateError.message,
-        }),
-      };
+      return json(500, {
+        success: false,
+        stage: 'karyawan_update',
+        error: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
     }
 
-    /*
-     * ================================
-     * 7. RESPONSE
-     * ================================
-     */
+    // 10. SUCCESS
+    return json(200, {
+      success: true,
+      message:
+        `Email ${employee.email} berhasil dikonfirmasi.`,
+      employee_id: employee.id,
+      id_karyawan: employee.id_karyawan,
+      nama: employee.nama,
+    });
 
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        success: true,
-        message:
-          `Email ${employee.email} berhasil dikonfirmasi.`,
-        employee_id: employee.id,
-        id_karyawan: employee.id_karyawan,
-        nama: employee.nama,
-      }),
-    };
   } catch (error: unknown) {
     const message =
       error instanceof Error
         ? error.message
-        : 'Server error.';
+        : String(error);
 
-    return {
-      statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        error: message,
-      }),
-    };
+    return json(500, {
+      success: false,
+      stage: 'unexpected',
+      error: message,
+    });
   }
 };
