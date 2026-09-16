@@ -1,215 +1,120 @@
-import ...
+import type { Karyawan, Absensi } from '../../../types';
 
-export type DashboardRole =
-  | 'Super Admin'
-  | 'Admin'
-  | 'HRD'
-  | 'Payroll'
-  | 'Supervisor'
-  | 'Karyawan';
+type DashboardRole = 'Super Admin' | 'Admin' | 'HRD' | string;
 
-export type RoleDashboardEmployee = {
-  id: string;
-  id_karyawan?: string;
-  nama: string;
-  jabatan?: string;
-  departemen?: string;
-  status_aktif?: boolean;
-  gaji_pokok?: number;
-};
-
-export type RoleDashboardAttendance = {
-  id: string;
-  nama?: string;
-  id_karyawan?: string;
-  tanggal?: string;
-  status?: string;
-  keterlambatan_menit?: number;
-};
-
-type Props = {
-  role: string;
-  employees: RoleDashboardEmployee[];
-  attendance: RoleDashboardAttendance[];
+interface RoleDashboardProps {
+  role: DashboardRole;
+  employees: Karyawan[];
+  attendance: Absensi[];
   present: number;
   late: number;
   payroll: number;
-  onNavigate: (menu: any) => void;
-};
+  onNavigate: (menu: string) => void;
+}
 
-function money(value: number) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(value);
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  description: string;
+  icon: string;
 }
 
 function StatCard({
-  title,
+  label,
   value,
   description,
   icon,
-}: {
-  title: string;
-  value: string;
-  description: string;
-  icon: string;
-}) {
+}: StatCardProps) {
   return (
     <div
       style={{
         background: '#ffffff',
-        border: '1px solid #d6ae58',
-        borderRadius: 14,
+        border: '1px solid #e7eaf0',
+        borderRadius: 16,
         padding: 20,
-        minHeight: 125,
-        boxShadow: '0 4px 14px rgba(16,26,51,.06)',
+        boxShadow: '0 4px 18px rgba(15, 23, 42, 0.05)',
       }}
     >
       <div
         style={{
           display: 'flex',
+          alignItems: 'center',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
+          marginBottom: 14,
         }}
       >
-        <div>
-          <div
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#667085',
-              textTransform: 'uppercase',
-              letterSpacing: '.06em',
-            }}
-          >
-            {title}
-          </div>
-
-          <div
-            style={{
-              marginTop: 10,
-              fontSize: 27,
-              fontWeight: 800,
-              color: '#101a33',
-            }}
-          >
-            {value}
-          </div>
-
-          <div
-            style={{
-              marginTop: 6,
-              fontSize: 12,
-              color: '#667085',
-            }}
-          >
-            {description}
-          </div>
-        </div>
-
-        <div
+        <span
           style={{
             width: 42,
             height: 42,
             borderRadius: 12,
-            display: 'grid',
-            placeItems: 'center',
-            background: '#101a33',
-            color: '#d6ae58',
-            fontSize: 18,
-            fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#f1f5f9',
+            fontSize: 20,
           }}
         >
           {icon}
-        </div>
-      </div>
-    </div>
-  );
-}
+        </span>
 
-function DashboardHeader({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div
-      style={{
-        marginBottom: 22,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        gap: 20,
-        flexWrap: 'wrap',
-      }}
-    >
-      <div>
-        <div
+        <span
           style={{
-            fontSize: 11,
-            fontWeight: 800,
-            color: '#d6ae58',
-            letterSpacing: '.12em',
-            marginBottom: 7,
-          }}
-        >
-          {eyebrow}
-        </div>
-
-        <h1
-          style={{
-            margin: 0,
-            color: '#101a33',
-            fontSize: 28,
-            fontWeight: 800,
-          }}
-        >
-          {title}
-        </h1>
-
-        <p
-          style={{
-            margin: '7px 0 0',
+            fontSize: 12,
             color: '#667085',
-            fontSize: 14,
           }}
         >
-          {description}
-        </p>
+          HRIS
+        </span>
       </div>
 
       <div
         style={{
-          background: '#101a33',
-          color: '#ffffff',
-          borderRadius: 10,
-          padding: '9px 14px',
-          fontSize: 12,
-          fontWeight: 700,
-          border: '1px solid #d6ae58',
+          fontSize: 13,
+          color: '#667085',
+          marginBottom: 5,
         }}
       >
-        ● Sistem Operational
+        {label}
+      </div>
+
+      <div
+        style={{
+          fontSize: 30,
+          lineHeight: 1.1,
+          fontWeight: 800,
+          color: '#172033',
+          marginBottom: 6,
+        }}
+      >
+        {value}
+      </div>
+
+      <div
+        style={{
+          fontSize: 12,
+          color: '#667085',
+        }}
+      >
+        {description}
       </div>
     </div>
   );
 }
 
-function QuickAction({
-  title,
-  description,
-  onClick,
-}: {
-  title: string;
+interface QuickActionProps {
+  label: string;
   description: string;
+  icon: string;
   onClick: () => void;
-}) {
+}
+
+function QuickAction({
+  label,
+  description,
+  icon,
+  onClick,
+}: QuickActionProps) {
   return (
     <button
       type="button"
@@ -218,268 +123,380 @@ function QuickAction({
         width: '100%',
         textAlign: 'left',
         background: '#ffffff',
-        border: '1px solid #d6ae58',
-        borderRadius: 12,
-        padding: 15,
+        border: '1px solid #e7eaf0',
+        borderRadius: 14,
+        padding: 16,
         cursor: 'pointer',
-        transition: 'all .2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 13,
       }}
     >
-      <div
+      <span
         style={{
-          color: '#101a33',
-          fontWeight: 800,
-          fontSize: 14,
+          width: 40,
+          height: 40,
+          flexShrink: 0,
+          borderRadius: 11,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#f1f5f9',
+          fontSize: 18,
         }}
       >
-        {title}
-      </div>
+        {icon}
+      </span>
 
-      <div
-        style={{
-          marginTop: 5,
-          color: '#667085',
-          fontSize: 12,
-        }}
-      >
-        {description}
-      </div>
+      <span style={{ display: 'block' }}>
+        <strong
+          style={{
+            display: 'block',
+            fontSize: 14,
+            color: '#172033',
+            marginBottom: 3,
+          }}
+        >
+          {label}
+        </strong>
+
+        <small
+          style={{
+            display: 'block',
+            fontSize: 12,
+            color: '#667085',
+          }}
+        >
+          {description}
+        </small>
+      </span>
     </button>
   );
 }
 
-function RecentAttendance({
-  attendance,
+function DashboardHeader({
+  title,
+  description,
+  role,
 }: {
-  attendance: RoleDashboardAttendance[];
+  title: string;
+  description: string;
+  role: string;
 }) {
-  const rows = attendance.slice(0, 7);
-
   return (
     <div
       style={{
-        background: '#ffffff',
-        border: '1px solid #d6ae58',
-        borderRadius: 14,
-        overflow: 'hidden',
+        marginBottom: 22,
+        padding: 24,
+        borderRadius: 18,
+        background:
+          'linear-gradient(135deg, #172033 0%, #24324d 100%)',
+        color: '#ffffff',
+        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
       }}
     >
       <div
         style={{
-          padding: 18,
-          borderBottom: '1px solid #e7eaf0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 20,
+          flexWrap: 'wrap',
         }}
       >
-        <div
-          style={{
-            color: '#101a33',
-            fontWeight: 800,
-            fontSize: 16,
-          }}
-        >
-          Aktivitas Absensi Terbaru
+        <div>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 1.2,
+              opacity: 0.7,
+              marginBottom: 7,
+            }}
+          >
+            MOONXPROJECT • HR COMMAND CENTER
+          </div>
+
+          <h2
+            style={{
+              margin: 0,
+              fontSize: 25,
+              fontWeight: 800,
+            }}
+          >
+            {title}
+          </h2>
+
+          <p
+            style={{
+              margin: '7px 0 0',
+              fontSize: 13,
+              opacity: 0.78,
+            }}
+          >
+            {description}
+          </p>
         </div>
 
         <div
           style={{
-            color: '#667085',
+            padding: '9px 14px',
+            borderRadius: 999,
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.14)',
             fontSize: 12,
-            marginTop: 4,
+            fontWeight: 700,
           }}
         >
-          Data absensi terbaru dari database.
+          {role}
         </div>
-      </div>
-
-      <div style={{ overflowX: 'auto' }}>
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            minWidth: 600,
-          }}
-        >
-          <thead>
-            <tr>
-              {['Karyawan', 'ID', 'Tanggal', 'Status'].map((item) => (
-                <th
-                  key={item}
-                  style={{
-                    textAlign: 'left',
-                    padding: '12px 15px',
-                    fontSize: 11,
-                    color: '#667085',
-                    borderBottom: '1px solid #e7eaf0',
-                    background: '#f8fafc',
-                  }}
-                >
-                  {item}
-                </th>
-              ))}
-            </tr>
-          </thead>
-
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={4}
-                  style={{
-                    padding: 25,
-                    textAlign: 'center',
-                    color: '#667085',
-                  }}
-                >
-                  Belum ada data absensi.
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => (
-                <tr key={row.id}>
-                  <td style={{ padding: '12px 15px', fontWeight: 700 }}>
-                    {row.nama || '-'}
-                  </td>
-
-                  <td style={{ padding: '12px 15px' }}>
-                    {row.id_karyawan || '-'}
-                  </td>
-
-                  <td style={{ padding: '12px 15px' }}>
-                    {row.tanggal || '-'}
-                  </td>
-
-                  <td style={{ padding: '12px 15px' }}>
-                    <span
-                      style={{
-                        display: 'inline-block',
-                        padding: '5px 9px',
-                        borderRadius: 999,
-                        background:
-                          String(row.status)
-                            .toLowerCase()
-                            .includes('terlambat')
-                            ? '#fff7ed'
-                            : '#ecfdf3',
-                        color:
-                          String(row.status)
-                            .toLowerCase()
-                            .includes('terlambat')
-                            ? '#c2410c'
-                            : '#15803d',
-                        fontSize: 11,
-                        fontWeight: 800,
-                      }}
-                    >
-                      {row.status || '-'}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
       </div>
     </div>
   );
 }
 
-function WorkforceSummary({
+function WorkforceOverview({
   employees,
+  attendance,
+  present,
+  late,
 }: {
-  employees: RoleDashboardEmployee[];
+  employees: Karyawan[];
+  attendance: Absensi[];
+  present: number;
+  late: number;
 }) {
-  const departments = employees.reduce<Record<string, number>>(
-    (result, employee) => {
-      const department = employee.departemen || 'Belum diatur';
+  const totalEmployees = employees.length;
+  const totalAttendance = attendance.length;
 
-      result[department] = (result[department] || 0) + 1;
-
-      return result;
-    },
-    {}
-  );
-
-  const rows = Object.entries(departments)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6);
-
-  const max = Math.max(1, ...rows.map((item) => item[1]));
+  const attendanceRate =
+    totalEmployees > 0
+      ? Math.min(
+          100,
+          Math.round((present / totalEmployees) * 100)
+        )
+      : 0;
 
   return (
     <div
       style={{
         background: '#ffffff',
-        border: '1px solid #d6ae58',
-        borderRadius: 14,
-        padding: 18,
+        border: '1px solid #e7eaf0',
+        borderRadius: 16,
+        padding: 20,
       }}
     >
       <div
         style={{
-          fontWeight: 800,
-          color: '#101a33',
-          fontSize: 16,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 18,
         }}
       >
-        Komposisi Workforce
+        <div>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: 16,
+              fontWeight: 800,
+              color: '#172033',
+            }}
+          >
+            Workforce Overview
+          </h3>
+
+          <p
+            style={{
+              margin: '5px 0 0',
+              fontSize: 12,
+              color: '#667085',
+            }}
+          >
+            Ringkasan kondisi tenaga kerja
+          </p>
+        </div>
+
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 700,
+            color: '#2563eb',
+          }}
+        >
+          Hari ini
+        </span>
       </div>
 
       <div
         style={{
-          color: '#667085',
-          fontSize: 12,
-          marginTop: 4,
-          marginBottom: 18,
+          display: 'grid',
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(150px, 1fr))',
+          gap: 12,
         }}
       >
-        Distribusi karyawan berdasarkan departemen.
-      </div>
-
-      {rows.length === 0 ? (
         <div
           style={{
-            padding: 25,
-            textAlign: 'center',
-            color: '#667085',
+            padding: 15,
+            borderRadius: 12,
+            background: '#f8fafc',
           }}
         >
-          Belum ada data departemen.
-        </div>
-      ) : (
-        rows.map(([department, count]) => (
-          <div key={department} style={{ marginBottom: 15 }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: 7,
-                fontSize: 12,
-              }}
-            >
-              <span style={{ color: '#172033' }}>{department}</span>
-              <b style={{ color: '#101a33' }}>{count}</b>
-            </div>
-
-            <div
-              style={{
-                height: 8,
-                background: '#edf0f4',
-                borderRadius: 999,
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  width: `${Math.round((count / max) * 100)}%`,
-                  height: '100%',
-                  background: '#101a33',
-                  borderRadius: 999,
-                }}
-              />
-            </div>
+          <div
+            style={{
+              fontSize: 12,
+              color: '#667085',
+              marginBottom: 6,
+            }}
+          >
+            Total Karyawan
           </div>
-        ))
-      )}
+
+          <strong
+            style={{
+              fontSize: 23,
+              color: '#172033',
+            }}
+          >
+            {totalEmployees}
+          </strong>
+        </div>
+
+        <div
+          style={{
+            padding: 15,
+            borderRadius: 12,
+            background: '#f8fafc',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              color: '#667085',
+              marginBottom: 6,
+            }}
+          >
+            Hadir
+          </div>
+
+          <strong
+            style={{
+              fontSize: 23,
+              color: '#159447',
+            }}
+          >
+            {present}
+          </strong>
+        </div>
+
+        <div
+          style={{
+            padding: 15,
+            borderRadius: 12,
+            background: '#f8fafc',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              color: '#667085',
+              marginBottom: 6,
+            }}
+          >
+            Terlambat
+          </div>
+
+          <strong
+            style={{
+              fontSize: 23,
+              color: '#d97706',
+            }}
+          >
+            {late}
+          </strong>
+        </div>
+
+        <div
+          style={{
+            padding: 15,
+            borderRadius: 12,
+            background: '#f8fafc',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 12,
+              color: '#667085',
+              marginBottom: 6,
+            }}
+          >
+            Attendance Rate
+          </div>
+
+          <strong
+            style={{
+              fontSize: 23,
+              color: '#2563eb',
+            }}
+          >
+            {attendanceRate}%
+          </strong>
+        </div>
+      </div>
+
+      <div
+        style={{
+          marginTop: 16,
+          paddingTop: 15,
+          borderTop: '1px solid #e7eaf0',
+          fontSize: 12,
+          color: '#667085',
+        }}
+      >
+        Total record absensi: <strong>{totalAttendance}</strong>
+      </div>
+    </div>
+  );
+}
+
+function RestrictedDashboard({
+  role,
+}: {
+  role: string;
+}) {
+  return (
+    <div
+      style={{
+        padding: 28,
+        borderRadius: 18,
+        border: '1px solid #e7eaf0',
+        background: '#ffffff',
+        textAlign: 'center',
+      }}
+    >
+      <div style={{ fontSize: 38, marginBottom: 10 }}>
+        🔒
+      </div>
+
+      <h2
+        style={{
+          margin: 0,
+          color: '#172033',
+        }}
+      >
+        Dashboard Terbatas
+      </h2>
+
+      <p
+        style={{
+          color: '#667085',
+          fontSize: 13,
+        }}
+      >
+        Role <strong>{role}</strong> belum memiliki
+        konfigurasi dashboard khusus.
+      </p>
     </div>
   );
 }
@@ -491,177 +508,106 @@ function SuperAdminDashboard({
   late,
   payroll,
   onNavigate,
-}: Props) {
-  const active = employees.filter(
-    (employee) => employee.status_aktif !== false
-  ).length;
-
-  const attendanceRate =
-    employees.length > 0
-      ? Math.min(
-          100,
-          Math.round((present / Math.max(1, employees.length)) * 100)
-        )
-      : 0;
-
+}: RoleDashboardProps) {
   return (
     <>
       <DashboardHeader
-        eyebrow="SUPER ADMIN COMMAND CENTER"
-        title="Executive HR Command Center"
-        description="Pusat kendali penuh untuk workforce, attendance, payroll, talent, security, dan sistem."
+        title="Super Admin Dashboard"
+        description="Kontrol penuh terhadap sistem HRIS, pengguna, data, keamanan, dan konfigurasi."
+        role="Super Admin"
       />
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 15,
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 14,
           marginBottom: 18,
         }}
       >
         <StatCard
-          title="Total Karyawan"
-          value={String(employees.length)}
-          description={`${active} karyawan aktif`}
+          label="Total Karyawan"
+          value={employees.length}
+          description="Seluruh workforce"
           icon="👥"
         />
 
         <StatCard
-          title="Attendance"
-          value={`${attendanceRate}%`}
-          description={`${present} hadir · ${late} terlambat`}
+          label="Hadir Hari Ini"
+          value={present}
+          description="Attendance aktif"
           icon="✓"
         />
 
         <StatCard
-          title="Payroll Workforce"
-          value={money(payroll)}
-          description="Total gaji pokok"
-          icon="Rp"
+          label="Terlambat"
+          value={late}
+          description="Perlu monitoring"
+          icon="◷"
         />
 
         <StatCard
-          title="Attendance Records"
-          value={String(attendance.length)}
-          description="Record tersimpan"
-          icon="◷"
+          label="Payroll"
+          value={payroll}
+          description="Data payroll"
+          icon="Rp"
         />
       </div>
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'minmax(0,1.4fr) minmax(280px,.6fr)',
+          gridTemplateColumns:
+            'minmax(0, 1.5fr) minmax(280px, 1fr)',
           gap: 18,
-          marginBottom: 18,
         }}
       >
-        <WorkforceSummary employees={employees} />
+        <WorkforceOverview
+          employees={employees}
+          attendance={attendance}
+          present={present}
+          late={late}
+        />
 
-        <div
-          style={{
-            background: '#101a33',
-            border: '1px solid #d6ae58',
-            borderRadius: 14,
-            padding: 18,
-            color: '#ffffff',
-          }}
-        >
+        <div>
+          <h3
+            style={{
+              margin: '0 0 12px',
+              fontSize: 16,
+              color: '#172033',
+            }}
+          >
+            Quick Actions
+          </h3>
+
           <div
             style={{
-              color: '#d6ae58',
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: '.1em',
+              display: 'grid',
+              gap: 10,
             }}
           >
-            SYSTEM CONTROL
+            <QuickAction
+              label="Kelola Karyawan"
+              description="Master data workforce"
+              icon="👥"
+              onClick={() => onNavigate('employees')}
+            />
+
+            <QuickAction
+              label="Audit Log"
+              description="Aktivitas sistem"
+              icon="◉"
+              onClick={() => onNavigate('audit')}
+            />
+
+            <QuickAction
+              label="Settings"
+              description="Konfigurasi sistem"
+              icon="⚙"
+              onClick={() => onNavigate('settings')}
+            />
           </div>
-
-          <h2
-            style={{
-              margin: '10px 0 6px',
-              fontSize: 19,
-            }}
-          >
-            Full Enterprise Access
-          </h2>
-
-          <p
-            style={{
-              margin: 0,
-              color: '#cbd5e1',
-              fontSize: 12,
-              lineHeight: 1.6,
-            }}
-          >
-            Super Admin memiliki akses ke seluruh modul HRIS,
-            permission, security, audit, payroll, dan konfigurasi sistem.
-          </p>
-
-          <button
-            type="button"
-            onClick={() => onNavigate('roles')}
-            style={{
-              marginTop: 18,
-              border: '1px solid #d6ae58',
-              background: '#d6ae58',
-              color: '#101a33',
-              padding: '9px 13px',
-              borderRadius: 8,
-              fontWeight: 800,
-              cursor: 'pointer',
-            }}
-          >
-            Kelola Role & Permission
-          </button>
-        </div>
-      </div>
-
-      <RecentAttendance attendance={attendance} />
-
-      <div style={{ marginTop: 18 }}>
-        <div
-          style={{
-            fontWeight: 800,
-            color: '#101a33',
-            marginBottom: 12,
-          }}
-        >
-          Quick Access
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))',
-            gap: 12,
-          }}
-        >
-          <QuickAction
-            title="Master Karyawan"
-            description="Kelola seluruh data workforce."
-            onClick={() => onNavigate('employees')}
-          />
-
-          <QuickAction
-            title="Payroll"
-            description="Buka pusat payroll enterprise."
-            onClick={() => onNavigate('payroll')}
-          />
-
-          <QuickAction
-            title="Audit Log"
-            description="Pantau aktivitas sistem."
-            onClick={() => onNavigate('audit')}
-          />
-
-          <QuickAction
-            title="Security Center"
-            description="Kontrol keamanan sistem."
-            onClick={() => onNavigate('security-v21')}
-          />
         </div>
       </div>
     </>
@@ -675,60 +621,49 @@ function AdminDashboard({
   late,
   payroll,
   onNavigate,
-}: Props) {
-  const active = employees.filter(
-    (employee) => employee.status_aktif !== false
-  ).length;
-
-  const attendanceRate =
-    employees.length > 0
-      ? Math.min(
-          100,
-          Math.round((present / Math.max(1, employees.length)) * 100)
-        )
-      : 0;
-
+}: RoleDashboardProps) {
   return (
     <>
       <DashboardHeader
-        eyebrow="ADMIN OPERATIONS"
-        title="Operations Dashboard"
-        description="Monitoring operasional harian, karyawan, absensi, jadwal, payroll, dan laporan."
+        title="Admin Dashboard"
+        description="Kelola operasional HR, karyawan, absensi, jadwal, dan laporan."
+        role="Admin"
       />
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 15,
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 14,
           marginBottom: 18,
         }}
       >
         <StatCard
-          title="Karyawan Aktif"
-          value={String(active)}
-          description={`Dari ${employees.length} total karyawan`}
+          label="Karyawan"
+          value={employees.length}
+          description="Data aktif"
           icon="👥"
         />
 
         <StatCard
-          title="Hadir Hari Ini"
-          value={String(present)}
-          description={`${attendanceRate}% attendance`}
+          label="Hadir"
+          value={present}
+          description="Hari ini"
           icon="✓"
         />
 
         <StatCard
-          title="Terlambat"
-          value={String(late)}
-          description="Perlu monitoring"
-          icon="!"
+          label="Terlambat"
+          value={late}
+          description="Hari ini"
+          icon="◷"
         />
 
         <StatCard
-          title="Payroll"
-          value={money(payroll)}
-          description="Total gaji pokok"
+          label="Payroll"
+          value={payroll}
+          description="Data payroll"
           icon="Rp"
         />
       </div>
@@ -736,47 +671,64 @@ function AdminDashboard({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
-        <QuickAction
-          title="Semua Karyawan"
-          description="Buka database karyawan."
-          onClick={() => onNavigate('employees')}
-        />
-
-        <QuickAction
-          title="Absensi Hari Ini"
-          description="Monitor attendance hari ini."
-          onClick={() => onNavigate('attendance-today')}
-        />
-
-        <QuickAction
-          title="Jadwal Kerja"
-          description="Kelola jadwal dan shift."
-          onClick={() => onNavigate('schedule')}
-        />
-
-        <QuickAction
-          title="Payroll"
-          description="Lihat proses payroll."
-          onClick={() => onNavigate('payroll')}
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
+          gridTemplateColumns:
+            'minmax(0, 1.5fr) minmax(280px, 1fr)',
           gap: 18,
-          marginBottom: 18,
         }}
       >
-        <WorkforceSummary employees={employees} />
+        <WorkforceOverview
+          employees={employees}
+          attendance={attendance}
+          present={present}
+          late={late}
+        />
 
-        <RecentAttendance attendance={attendance} />
+        <div>
+          <h3
+            style={{
+              margin: '0 0 12px',
+              fontSize: 16,
+              color: '#172033',
+            }}
+          >
+            Operasional
+          </h3>
+
+          <div
+            style={{
+              display: 'grid',
+              gap: 10,
+            }}
+          >
+            <QuickAction
+              label="Karyawan"
+              description="Kelola data karyawan"
+              icon="👥"
+              onClick={() => onNavigate('employees')}
+            />
+
+            <QuickAction
+              label="Absensi"
+              description="Monitoring kehadiran"
+              icon="✓"
+              onClick={() => onNavigate('attendance')}
+            />
+
+            <QuickAction
+              label="Jadwal"
+              description="Kelola jadwal kerja"
+              icon="▦"
+              onClick={() => onNavigate('schedule')}
+            />
+
+            <QuickAction
+              label="Laporan"
+              description="Lihat laporan HR"
+              icon="▤"
+              onClick={() => onNavigate('reports')}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
@@ -787,223 +739,173 @@ function HRDDashboard({
   attendance,
   present,
   late,
+  payroll,
   onNavigate,
-}: Props) {
-  const active = employees.filter(
-    (employee) => employee.status_aktif !== false
-  ).length;
-
-  const inactive = Math.max(0, employees.length - active);
-
-  const attendanceRate =
-    employees.length > 0
-      ? Math.min(
-          100,
-          Math.round((present / Math.max(1, employees.length)) * 100)
-        )
-      : 0;
-
+}: RoleDashboardProps) {
   return (
     <>
       <DashboardHeader
-        eyebrow="HRD PEOPLE MANAGEMENT"
-        title="People & HR Dashboard"
-        description="Pusat monitoring employee lifecycle, attendance, leave, talent, KPI, dan laporan HR."
+        title="HRD Dashboard"
+        description="Monitoring workforce, absensi, cuti, talent management, dan kebutuhan HR."
+        role="HRD"
       />
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 15,
+          gridTemplateColumns:
+            'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 14,
           marginBottom: 18,
         }}
       >
         <StatCard
-          title="Total Workforce"
-          value={String(employees.length)}
-          description={`${active} aktif · ${inactive} nonaktif`}
+          label="Total Karyawan"
+          value={employees.length}
+          description="Workforce"
           icon="👥"
         />
 
         <StatCard
-          title="Attendance"
-          value={`${attendanceRate}%`}
-          description={`${present} hadir`}
+          label="Hadir"
+          value={present}
+          description="Hari ini"
           icon="✓"
         />
 
         <StatCard
-          title="Terlambat"
-          value={String(late)}
-          description="Employee attendance"
-          icon="!"
+          label="Terlambat"
+          value={late}
+          description="Perlu tindak lanjut"
+          icon="◷"
         />
 
         <StatCard
-          title="Data Absensi"
-          value={String(attendance.length)}
-          description="Record tersedia"
-          icon="◷"
+          label="Payroll"
+          value={payroll}
+          description="Informasi payroll"
+          icon="Rp"
         />
       </div>
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 12,
-          marginBottom: 18,
-        }}
-      >
-        <QuickAction
-          title="Employee Master"
-          description="Kelola data karyawan."
-          onClick={() => onNavigate('employees')}
-        />
-
-        <QuickAction
-          title="Employee 360°"
-          description="Lihat profil employee secara lengkap."
-          onClick={() => onNavigate('employee-360')}
-        />
-
-        <QuickAction
-          title="Leave Management"
-          description="Pengajuan dan saldo cuti."
-          onClick={() => onNavigate('leave-request')}
-        />
-
-        <QuickAction
-          title="Performance & KPI"
-          description="Monitor performance dan target."
-          onClick={() => onNavigate('performance')}
-        />
-
-        <QuickAction
-          title="Recruitment ATS"
-          description="Kelola kandidat dan recruitment."
-          onClick={() => onNavigate('recruitment-v25')}
-        />
-
-        <QuickAction
-          title="Reports"
-          description="Laporan HR dan workforce."
-          onClick={() => onNavigate('reports')}
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
+          gridTemplateColumns:
+            'minmax(0, 1.5fr) minmax(280px, 1fr)',
           gap: 18,
         }}
       >
-        <WorkforceSummary employees={employees} />
+        <WorkforceOverview
+          employees={employees}
+          attendance={attendance}
+          present={present}
+          late={late}
+        />
 
-        <RecentAttendance attendance={attendance} />
+        <div>
+          <h3
+            style={{
+              margin: '0 0 12px',
+              fontSize: 16,
+              color: '#172033',
+            }}
+          >
+            HR Management
+          </h3>
+
+          <div
+            style={{
+              display: 'grid',
+              gap: 10,
+            }}
+          >
+            <QuickAction
+              label="Employee Master"
+              description="Kelola data karyawan"
+              icon="👥"
+              onClick={() => onNavigate('employees')}
+            />
+
+            <QuickAction
+              label="Attendance"
+              description="Monitoring kehadiran"
+              icon="✓"
+              onClick={() => onNavigate('attendance')}
+            />
+
+            <QuickAction
+              label="Leave"
+              description="Kelola cuti dan approval"
+              icon="▣"
+              onClick={() => onNavigate('leave')}
+            />
+
+            <QuickAction
+              label="Talent"
+              description="Talent management"
+              icon="★"
+              onClick={() => onNavigate('talent')}
+            />
+          </div>
+        </div>
       </div>
     </>
   );
 }
 
-function RestrictedDashboard({
+export default function RoleDashboard({
   role,
   employees,
   attendance,
   present,
   late,
+  payroll,
   onNavigate,
-}: Props) {
-  return (
-    <>
-      <DashboardHeader
-        eyebrow={`${role.toUpperCase()} DASHBOARD`}
-        title={`${role} Dashboard`}
-        description="Dashboard berdasarkan hak akses akun Anda."
-      />
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 15,
-          marginBottom: 18,
-        }}
-      >
-        <StatCard
-          title="Karyawan"
-          value={String(employees.length)}
-          description="Data workforce"
-          icon="👥"
-        />
-
-        <StatCard
-          title="Hadir"
-          value={String(present)}
-          description="Attendance"
-          icon="✓"
-        />
-
-        <StatCard
-          title="Terlambat"
-          value={String(late)}
-          description="Attendance exception"
-          icon="!"
-        />
-
-        <StatCard
-          title="Absensi"
-          value={String(attendance.length)}
-          description="Record"
-          icon="◷"
-        />
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))',
-          gap: 12,
-        }}
-      >
-        <QuickAction
-          title="Karyawan"
-          description="Lihat data karyawan."
-          onClick={() => onNavigate('employees')}
-        />
-
-        <QuickAction
-          title="Absensi"
-          description="Lihat data absensi."
-          onClick={() => onNavigate('attendance')}
-        />
-
-        <QuickAction
-          title="Laporan"
-          description="Buka laporan."
-          onClick={() => onNavigate('reports')}
-        />
-      </div>
-    </>
-  );
-}
-
-export default function RoleDashboard(props: Props) {
-  const normalizedRole = String(props.role || '').trim();
+}: RoleDashboardProps) {
+  const normalizedRole = String(role || '').trim();
 
   if (normalizedRole === 'Super Admin') {
-    return <SuperAdminDashboard {...props} />;
+    return (
+      <SuperAdminDashboard
+        role={role}
+        employees={employees}
+        attendance={attendance}
+        present={present}
+        late={late}
+        payroll={payroll}
+        onNavigate={onNavigate}
+      />
+    );
   }
 
   if (normalizedRole === 'Admin') {
-    return <AdminDashboard {...props} />;
+    return (
+      <AdminDashboard
+        role={role}
+        employees={employees}
+        attendance={attendance}
+        present={present}
+        late={late}
+        payroll={payroll}
+        onNavigate={onNavigate}
+      />
+    );
   }
 
   if (normalizedRole === 'HRD') {
-    return <HRDDashboard {...props} />;
+    return (
+      <HRDDashboard
+        role={role}
+        employees={employees}
+        attendance={attendance}
+        present={present}
+        late={late}
+        payroll={payroll}
+        onNavigate={onNavigate}
+      />
+    );
   }
 
-  return <RestrictedDashboard {...props} />;
+  return <RestrictedDashboard role={normalizedRole || 'Unknown'} />;
 }
