@@ -1,4 +1,5 @@
 import PayrollIndonesiaV23 from '../payroll/PayrollIndonesiaV23';
+import RoleDashboard from './RoleDashboard';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode, type CSSProperties } from 'react';
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client';
 import { signIn, signOut } from '../../../lib/auth';
@@ -61,7 +62,77 @@ const menuGroups: {title:string;items: readonly [MenuKey,string,string][]}[] = [
  {title:'SYSTEM',items:[['enterprise-v20','Enterprise Command Center','org'],['payroll-indonesia-v23','Payroll Indonesia Compliance','payroll'],['security-v21','Security Center','health'],['approvals','Pusat Persetujuan','check'],['notifications','Notifikasi','bell'],['system-health','System Health','health'],['settings','Pengaturan','settings'],['roles','Role & Permission','users'],['audit','Audit Log','request']]}
 ] as const;
 
-const rolePermissions: Record<string,string[]> = {'Super Admin':['*'],'Admin':['people','attendance','schedule','leave','payroll','talent','reports','system'],'HRD':['people','attendance','schedule','leave','talent','reports'],'Payroll':['people.read','attendance.read','payroll','reports.payroll'],'Supervisor':['people.read','attendance.read','schedule.read','leave.read','leave.approve','reports.attendance'],'Karyawan':[]};
+const rolePermissions: Record<string, string[]> = {
+  'Super Admin': ['*'],
+
+  Admin: [
+    'dashboard',
+    'people',
+    'people.read',
+    'people.write',
+    'attendance',
+    'attendance.read',
+    'attendance.write',
+    'schedule',
+    'schedule.read',
+    'schedule.write',
+    'leave',
+    'leave.read',
+    'leave.approve',
+    'payroll',
+    'payroll.read',
+    'talent',
+    'talent.read',
+    'talent.write',
+    'reports',
+    'reports.read',
+    'audit.read',
+    'settings',
+  ],
+
+  HRD: [
+    'dashboard',
+    'people',
+    'people.read',
+    'people.write',
+    'attendance',
+    'attendance.read',
+    'attendance.write',
+    'schedule',
+    'schedule.read',
+    'schedule.write',
+    'leave',
+    'leave.read',
+    'leave.approve',
+    'talent',
+    'talent.read',
+    'talent.write',
+    'reports',
+    'reports.read',
+    'audit.read',
+  ],
+
+  Payroll: [
+    'dashboard',
+    'people.read',
+    'attendance.read',
+    'payroll',
+    'payroll.read',
+    'reports.read',
+  ],
+
+  Supervisor: [
+    'dashboard',
+    'people.read',
+    'attendance.read',
+    'schedule.read',
+    'leave.read',
+    'leave.approve',
+    'reports.read',
+  ],
+
+  Karyawan: [],
+};
 const menuGroup=(key:MenuKey)=>['employees','employee-360','employee-add','organization'].includes(key)?'people':['attendance','attendance-today','late','leave','overtime','selfie'].includes(key)?'attendance':['schedule','shift','holiday'].includes(key)?'schedule':['leave-request','leave-balance','approvals'].includes(key)?'leave':['payroll','payroll-components','payroll-overtime','payslip','production-hr','payroll-engine','payroll-production-v22'].includes(key)?'payroll':['performance','kpi'].includes(key)?'talent':['recruitment','candidates','recruitment-v25'].includes(key)?'recruitment':['enterprise-v26','enterprise-v27','enterprise-v28','enterprise-v29','enterprise-v30','enterprise-v31','enterprise-v32','enterprise-v33','enterprise-v34','enterprise-v35'].includes(key)?'system':key==='reports'?'reports':key==='settings'?'settings':key==='roles'?'roles':key==='audit'?'audit':key==='notifications'?'notifications':key==='system-health'?'system':(key==='enterprise-v26'||key==='payroll-indonesia-v23')||key==='security-v21'?'system':'overview';
 const requiredPermission=(key:MenuKey)=>{if(key==='hr-operations')return 'people.read';if(key==='production-hr'||key==='payroll-engine'||key==='payroll-production-v22')return 'payroll.read';const g=menuGroup(key); if(key==='employee-add')return 'people.write'; if(key==='roles')return 'roles.read'; if(key==='settings')return 'settings.write'; if(key==='audit')return 'audit.read'; if(key==='approvals')return 'approval.read'; if(key==='notifications')return 'notifications.read'; if(key==='system-health')return 'system.health';if((key==='enterprise-v26'||key==='payroll-indonesia-v23'))return 'system.health'; if(key==='security-v21')return 'security.read'; if(key.startsWith('enterprise-v')) return 'system.health'; if(key==='overtime')return 'overtime.read'; if(key==='reports')return 'reports.read'; if(g==='recruitment')return 'recruitment.read'; if(g==='talent')return 'talent.read'; return g==='overview'?'':`${g}.read`;};
 const menuPermissionForRole=(key:MenuKey,role:string,dbPerms:string[]=[])=>{if(role==='Super Admin'||requiredPermission(key)===''||dbPerms.includes('*'))return true;const req=requiredPermission(key);if(key==='approvals')return ['approval.read','leave.approve','overtime.approve','payroll.approve','recruitment.approve'].some(p=>hasPermission(dbPerms,p,role)||hasPermission(rolePermissions[role]||[],p,role));return hasPermission(dbPerms,req,role)||hasPermission(dbPerms,menuGroup(key),role)||hasPermission(rolePermissions[role]||[],req,role)||hasPermission(rolePermissions[role]||[],menuGroup(key),role);};
@@ -316,7 +387,17 @@ export default function DashboardAdmin(){
   </aside>
   <main className="talenta-main"><header className="topbar"><button className="icon-btn" aria-label="Buka menu" onClick={()=>setSidebar(v=>!v)}><Icon name="menu"/></button><div className="crumb"><span>MoonXprojecT</span><b>/</b>{activeLabel}</div><div className="top-actions"><div className="search-global"><span><Icon name="search"/></span><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Cari data..."/></div><button className="icon-btn" aria-label="Muat ulang" onClick={()=>refresh()}><Icon name="refresh"/></button><div className="avatar">HR</div></div></header>
    <section className="page">{loading&&<div className="loading">Memuat data…</div>}{error&&<div className="alert">{error}</div>}
-    {menu==='overview'&&<Overview employees={employees} attendance={attendance} present={present} late={late} payroll={payroll} onNavigate={navigate}/>}
+    {menu === 'overview' && (
+  <RoleDashboard
+    role={userRole}
+    employees={employees}
+    attendance={attendance}
+    present={present}
+    late={late}
+    payroll={payroll}
+    onNavigate={navigate}
+  />
+)}
     {menu==='employees'&&<Employees data={filtered} onDelete={removeEmployee} onEdit={setEditing} onExport={()=>exportCsv(employees as any,'database-karyawan.csv')} onAdd={()=>navigate('employee-add')} onConfirmEmail={confirmEmployeeEmail}/> }
     {menu==='employee-360'&&<Employee360 employees={employees}/>}
     {menu==='employee-add'&&<AddEmployee refresh={refresh} onDone={()=>navigate('employees')}/>} {menu==='hr-operations'&&<HRISCore employees={employees}/>} {menu==='production-hr'&&<ProductionHR employees={employees}/>} 
