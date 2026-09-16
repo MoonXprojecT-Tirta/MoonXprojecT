@@ -11,7 +11,7 @@
     "audit": "node scripts/audit.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.4"
+    "@supabase/supabase-js": "^2.57.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
