@@ -1,449 +1,404 @@
-:root {
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: #f8fafc;
-  background: #0b132b;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
+/* =========================================================
+   MOONXPROJECT - GLOBAL
+   ========================================================= */
 
 * {
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
   margin: 0;
-  min-width: 320px;
-  background: #0b132b;
-  color: #f8fafc;
+  padding: 0;
 }
+
+html {
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: #f4f7fb;
+}
+
+body {
+  min-height: 100vh;
+  color: #10213f;
+  background: #f4f7fb;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* =========================================================
+   APP
+   ========================================================= */
 
 .app-root {
   min-height: 100vh;
-  background: #0b132b;
 }
 
-/* Navbar: Background Navy dengan Border Tipis */
-.public-nav {
-  height: 64px;
-  background: #0b132b;
-  color: white;
+/* =========================================================
+   LOGIN PAGE
+   ========================================================= */
+
+.unified-login-page {
+  min-height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 5%;
-  position: relative;
-  z-index: 5;
-  border-bottom: 1px solid #1e293b;
-}
-
-/* Hanya ubah warna teks menjadi putih untuk brand di Navbar dan Sidebar (area gelap) */
-.public-nav .public-brand, 
-.talenta-sidebar .brand {
-  background: transparent !important;
-  color: #ffffff !important;
-}
-
-.public-nav .public-brand b, 
-.talenta-sidebar .brand b {
-  color: #ffffff !important;
-}
-
-.public-nav .public-brand span, 
-.talenta-sidebar .brand-mark,
-.brand-mark {
-  color: #d6ae58 !important; /* Aksen warna Gold untuk ikon bulan sabit */
-}
-
-/* Pastikan brand di dalam kotak login tetap berwarna gelap */
-.login-card .brand {
-  color: #172033 !important;
-  background: transparent !important;
-}
-
-.login-card .brand b {
-  color: #172033 !important;
-}
-/* Menu di pojok kanan atas berbingkai dan beraksen Gold */
-.public-nav nav button {
-  border: 1px solid rgba(214, 174, 88, 0.35);
-  background: rgba(214, 174, 88, 0.05);
-  color: #d6ae58;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-/* Menu Hover & Active */
-.public-nav nav button:hover,
-.public-nav nav button.active {
-  background: rgba(214, 174, 88, 0.2);
-  border-color: #d6ae58;
-  color: #f3e5ab;
-}
-
-/* Hero Section: Background Navy */
-.hero {
-  min-height: calc(100vh - 64px);
-  display: grid;
-  place-items: center;
-  padding: 40px 20px;
-  background: #0b132b;
-}
-
-.hero-card {
-  max-width: 760px;
-  text-align: center;
-}
-
-.eyebrow {
-  font-size: 10px;
-  color: #d6ae58;
-  font-weight: 800;
-  letter-spacing: 1.4px;
-}
-
-.hero h1 {
-  font-size: 48px;
-  line-height: 1.08;
-  letter-spacing: -1.5px;
-  margin: 14px 0;
-  color: #ffffff;
-}
-
-.hero p {
-  max-width: 620px;
-  margin: 0 auto 24px;
-  color: #94a3b8;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.hero-primary,
-.hero-secondary {
-  border-radius: 9px;
-  padding: 12px 17px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.hero-primary {
-  background: #2563eb;
-  color: #fff;
-  border: 1px solid #2563eb;
-}
-
-.hero-secondary {
-  margin-left: 8px;
-  background: #1e293b;
-  color: #f8fafc;
-  border: 1px solid #334155;
-}
-
-.public-page {
-  padding: 25px;
-  max-width: 1250px;
-  margin: auto;
-}
-
-@media(max-width: 650px) {
-  .public-nav nav button:nth-child(1) {
-    display: none;
-  }
-  .hero h1 {
-    font-size: 35px;
-  }
-  .hero-secondary {
-    margin: 8px 0 0;
-  }
-  .public-page {
-    padding: 10px;
-  }
-}
-/* Memastikan teks di dalam kotak kartu (yang berlatar belakang putih) berwarna gelap kembali */
-.login-card, 
-.registration-card, 
-.portal-card, 
-.portal-empty {
-  color: #172033 !important;
-}
-
-.login-card h1, .login-card h2, .login-card b, .login-card strong, .login-card p,
-.registration-card h1, .registration-card h2, .registration-card b, .registration-card strong, .registration-card p {
-  color: #0d1b35 !important;
-}
-
-/* Khusus untuk teks deskripsi pendukung di kartu */
-.login-card p, .registration-card p, .login-card small {
-  color: #667085 !important;
-}
-/* Membuat latar belakang area brand menjadi transparan di atas background Navy */
-.public-brand, 
-.brand {
-  background: transparent !important;
-  color: #ffffff !important;
-}
-
-/* Memastikan teks nama perusahaan dan ikon logo terlihat jelas berwarna putih/gold */
-.public-brand b, 
-.brand b {
-  color: #ffffff !important;
-}
-
-.public-brand span, 
-.brand-mark {
-  color: #d6ae58 !important; /* Aksen warna Gold untuk ikon bulan sabit */
-}
-/* V11 Employee Self Service refinements */
-.form-two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.employee-form textarea{width:100%;min-height:82px;margin-top:7px;border:1px solid #d9dee8;border-radius:10px;padding:11px 12px;background:#fff;color:#172033;font:inherit;font-size:12px;resize:vertical}.employee-form select{width:100%;height:43px;margin-top:7px;border:1px solid #d9dee8;border-radius:10px;padding:0 12px;background:#fff;color:#172033;font:inherit;font-size:12px}.ess-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:18px}.ess-kpi{padding:20px}.ess-kpi small,.card-kicker{font-size:9px;font-weight:850;letter-spacing:1.5px;color:#9a7a13}.ess-kpi strong{display:block;color:#0f172a;font-size:25px;margin:9px 0 4px}.ess-kpi span{font-size:9px;color:#98a2b3}.balance-list{margin-top:15px}.balance-list>div,.request-list>div,.salary-lines>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #e7eaf0;font-size:11px}.balance-list b,.salary-lines b{color:#172033}.muted{color:#98a2b3;font-size:10px}.table-card{padding:22px}.table-scroll{overflow:auto;margin-top:18px}.table-scroll table{width:100%;border-collapse:collapse;min-width:650px}.table-scroll th,.table-scroll td{padding:11px 10px;text-align:left;border-bottom:1px solid #eef0f4;font-size:10px}.table-scroll th{font-size:9px;text-transform:uppercase;letter-spacing:.6px;color:#98a2b3}.request-list{margin-top:12px}.request-list small{display:block;color:#98a2b3;font-size:9px;margin-top:4px}.salary-lines{margin:15px 0}.full{width:100%;margin-top:8px}.portal-info .portal-link,.portal-error .portal-link{display:inline-block;margin-left:10px}.portal-info,.portal-error{display:flex;align-items:center;justify-content:space-between;gap:12px}@media(max-width:800px){.ess-kpis{grid-template-columns:1fr}.form-two{grid-template-columns:1fr}}
-
-/* V21 Security Center */
-.permission-chips{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0}.permission-chip{padding:7px 10px;border:1px solid #dbe3ec;border-radius:999px;background:#f7f9fc;font-size:12px;font-weight:700;color:#334155}.inline-alert{margin:0 0 12px;padding:10px 12px;border-radius:10px;background:#fff7ed;color:#9a3412;font-size:13px}.muted{color:#64748b}.table-search{min-width:260px;border:1px solid #dbe3ec;border-radius:10px;padding:10px 12px;background:#fff}.data-table code{font-size:11px;white-space:pre-wrap;word-break:break-word}@media(max-width:760px){.table-search{min-width:0;width:100%}}
-
-.runtime-error{min-height:100vh;display:grid;place-items:center;padding:32px;background:var(--bg,#f6f7fb)}
-.runtime-error-card{width:min(520px,100%);padding:32px;border:1px solid rgba(15,23,42,.1);border-radius:20px;background:#fff;box-shadow:0 18px 60px rgba(15,23,42,.1)}
-.runtime-error-card h1{margin:8px 0 10px;font-size:28px}.runtime-error-card p{color:#64748b;line-height:1.6;margin:0 0 22px}
-/* =========================================================
-   MOONXPROJECT - GLOBAL BUTTON & TAB STYLE
-   Navy + Gold Enterprise Style
-   ========================================================= */
-
-:root {
-  --mx-button-bg: #101a33;
-  --mx-button-bg-hover: #182544;
-  --mx-button-border: #d6ae58;
-  --mx-button-border-hover: #f0cf7a;
-  --mx-button-text: #ffffff;
+  justify-content: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(31, 75, 150, 0.08),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 85%,
+      rgba(31, 75, 150, 0.07),
+      transparent 30%
+    ),
+    #f4f7fb;
 }
 
 /* =========================================================
-   TOMBOL STANDARD
+   LOGIN CARD
    ========================================================= */
 
-button.primary,
-button.secondary,
-button.full,
-button[type="submit"] {
-  background: var(--mx-button-bg);
-  color: var(--mx-button-text);
-  border: 1px solid var(--mx-button-border);
-  border-radius: 9px;
-  font-family: inherit;
-  font-weight: 700;
-  cursor: pointer;
-
-  transition:
-    background .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease,
-    transform .12s ease;
-}
-
-/* Hover */
-
-button.primary:hover,
-button.secondary:hover,
-button.full:hover,
-button[type="submit"]:hover {
-  background: var(--mx-button-bg-hover);
-  color: #ffffff;
-  border-color: var(--mx-button-border-hover);
-
+.unified-login-card {
+  width: min(100%, 500px);
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 24px;
+  padding: 42px;
   box-shadow:
-    0 4px 12px rgba(16, 26, 51, .25);
+    0 24px 60px rgba(15, 35, 65, 0.10),
+    0 4px 16px rgba(15, 35, 65, 0.04);
+}
 
+.unified-login-card.compact {
+  width: min(100%, 420px);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.unified-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 42px;
+}
+
+.unified-logo {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #071a3d;
+  border: 1px solid #dcae21;
+  color: #e5b82d;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  box-shadow: 0 5px 16px rgba(7, 26, 61, 0.15);
+}
+
+.unified-brand strong {
+  display: block;
+  color: #071a3d;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.unified-brand small {
+  display: block;
+  margin-top: 4px;
+  color: #7a879b;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   HEADING
+   ========================================================= */
+
+.unified-login-heading {
+  margin-bottom: 28px;
+}
+
+.unified-login-heading > span {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: #b88910;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.unified-login-heading h1 {
+  margin: 0 0 10px;
+  color: #071a3d;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.8px;
+}
+
+.unified-login-heading p {
+  margin: 0;
+  color: #68758a;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.unified-login-error {
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  border: 1px solid #f0c7c7;
+  border-radius: 10px;
+  background: #fff5f5;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   LOGIN FORM
+   ========================================================= */
+
+.unified-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+}
+
+.unified-login-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.unified-login-form label > span {
+  color: #172b4d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.unified-login-form input {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d8e0eb;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #10213f;
+  font-size: 14px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.unified-login-form input::placeholder {
+  color: #a1acbb;
+}
+
+.unified-login-form input:hover {
+  border-color: #b9c5d5;
+}
+
+.unified-login-form input:focus {
+  border-color: #183b73;
+  box-shadow: 0 0 0 3px rgba(24, 59, 115, 0.10);
+}
+
+/* =========================================================
+   LOGIN BUTTON
+   ========================================================= */
+
+.unified-login-button {
+  width: 100%;
+  height: 50px;
+  margin-top: 5px;
+  border: 0;
+  border-radius: 10px;
+  background: #071a3d;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 750;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.unified-login-button:hover:not(:disabled) {
+  background: #102d5e;
+  box-shadow: 0 8px 22px rgba(7, 26, 61, 0.18);
   transform: translateY(-1px);
 }
 
-/* Klik */
-
-button.primary:active,
-button.secondary:active,
-button.full:active,
-button[type="submit"]:active {
+.unified-login-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow:
-    0 2px 5px rgba(16, 26, 51, .18);
 }
 
 /* =========================================================
-   TAB
+   REGISTER
    ========================================================= */
 
-.tabs button,
-.tab-list button,
-.panel-tabs button,
-.settings-tabs button {
-  background: #ffffff;
-  color: #344054;
+.unified-login-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 24px;
+  color: #718096;
+  font-size: 13px;
+  text-align: center;
+}
 
-  border: 1px solid var(--mx-button-border);
+.unified-login-register button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #17458a;
+  font-weight: 750;
+}
+
+.unified-login-register button:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================
+   SECURITY
+   ========================================================= */
+
+.unified-login-security {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-top: 28px;
+  padding: 13px 14px;
+  border: 1px solid #e8edf4;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.unified-login-security > span {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
+  background: #edf2f8;
+  font-size: 14px;
+}
 
-  padding: 8px 14px;
-  min-height: 38px;
-
-  font-family: inherit;
+.unified-login-security strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #263957;
   font-size: 12px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    background .18s ease,
-    color .18s ease,
-    border-color .18s ease,
-    box-shadow .18s ease;
+  font-weight: 750;
 }
 
-/* Tab hover */
-
-.tabs button:hover,
-.tab-list button:hover,
-.panel-tabs button:hover,
-.settings-tabs button:hover {
-  background: #faf6e9;
-  color: #101a33;
-  border-color: var(--mx-button-border-hover);
-}
-
-/* Tab aktif */
-
-.tabs button.active,
-.tab-list button.active,
-.panel-tabs button.active,
-.settings-tabs button.active,
-button.active {
-  background: var(--mx-button-bg) !important;
-  color: #ffffff !important;
-
-  border: 1px solid var(--mx-button-border) !important;
-  border-radius: 8px;
-
-  font-weight: 800;
-
-  box-shadow:
-    0 3px 10px rgba(16, 26, 51, .20);
+.unified-login-security small {
+  display: block;
+  color: #8490a2;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 /* =========================================================
-   ICON BUTTON
+   LOADING
    ========================================================= */
 
-button.icon-btn {
-  background: #ffffff;
-  color: #101a33;
-
-  border: 1px solid var(--mx-button-border);
-  border-radius: 8px;
-
-  cursor: pointer;
-
-  transition:
-    background .18s ease,
-    color .18s ease,
-    border-color .18s ease;
-}
-
-button.icon-btn:hover {
-  background: var(--mx-button-bg);
-  color: #ffffff;
-  border-color: var(--mx-button-border-hover);
+.unified-loading {
+  color: #53647c;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 /* =========================================================
-   LINK BUTTON
+   REGISTER PAGE
    ========================================================= */
 
-button.link-btn {
-  background: #ffffff;
-  color: #101a33;
-
-  border: 1px solid var(--mx-button-border);
-  border-radius: 7px;
-
-  cursor: pointer;
-  font-weight: 700;
-
-  transition: all .18s ease;
-}
-
-button.link-btn:hover {
-  background: var(--mx-button-bg);
-  color: #ffffff;
-  border-color: var(--mx-button-border-hover);
+.public-page {
+  min-height: 100vh;
+  background: #f4f7fb;
 }
 
 /* =========================================================
-   DANGER BUTTON
-   Tetap merah agar fungsi hapus/berbahaya mudah dikenali
+   RESPONSIVE
    ========================================================= */
 
-button.danger-text {
-  background: #ffffff;
-  color: #b42318;
-
-  border: 1px solid #e5a29c;
-  border-radius: 7px;
-
-  cursor: pointer;
-  font-weight: 700;
-
-  transition: all .18s ease;
-}
-
-button.danger-text:hover {
-  background: #b42318;
-  color: #ffffff;
-  border-color: #b42318;
-}
-
-/* =========================================================
-   BUTTON DISABLED
-   ========================================================= */
-
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* =========================================================
-   FOCUS
-   ========================================================= */
-
-button:focus-visible {
-  outline: 2px solid #d6ae58;
-  outline-offset: 2px;
-}
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 700px) {
-
-  .tabs,
-  .tab-list,
-  .panel-tabs,
-  .settings-tabs {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    padding-bottom: 5px;
+@media (max-width: 600px) {
+  .unified-login-page {
+    align-items: flex-start;
+    padding: 22px 14px;
   }
 
-  .tabs button,
-  .tab-list button,
-  .panel-tabs button,
-  .settings-tabs button {
-    flex-shrink: 0;
-    white-space: nowrap;
+  .unified-login-card {
+    width: 100%;
+    padding: 28px 22px;
+    border-radius: 18px;
+  }
+
+  .unified-brand {
+    margin-bottom: 34px;
+  }
+
+  .unified-login-heading h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 380px) {
+  .unified-login-card {
+    padding: 24px 18px;
+  }
+
+  .unified-login-heading h1 {
+    font-size: 23px;
+  }
+
+  .unified-brand small {
+    font-size: 10px;
   }
 }
