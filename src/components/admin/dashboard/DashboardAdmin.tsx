@@ -395,7 +395,7 @@ export default function DashboardAdmin(){
     present={present}
     late={late}
     payroll={payroll}
-    onNavigate={navigate}
+    onNavigate={(menu) => navigate(menu as MenuKey)}
   />
 )}
     {menu==='employees'&&<Employees data={filtered} onDelete={removeEmployee} onEdit={setEditing} onExport={()=>exportCsv(employees as any,'database-karyawan.csv')} onAdd={()=>navigate('employee-add')} onConfirmEmail={confirmEmployeeEmail}/> }
