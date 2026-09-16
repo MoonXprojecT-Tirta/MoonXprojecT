@@ -66,10 +66,6 @@ export const handler = async (event: NetlifyEvent) => {
       }
     );
 
-    // =====================================================
-    // VALIDASI USER HR
-    // =====================================================
-
     const {
       data: authData,
       error: authError,
@@ -106,8 +102,8 @@ export const handler = async (event: NetlifyEvent) => {
     if (hrError) {
       return json(500, {
         success: false,
-        error: hrError.message,
         stage: 'hris_users',
+        error: hrError.message,
       });
     }
 
@@ -140,13 +136,9 @@ export const handler = async (event: NetlifyEvent) => {
       });
     }
 
-    // =====================================================
-    // REQUEST BODY
-    // =====================================================
-
     let body: {
       employee_id?: string;
-    };
+    } = {};
 
     try {
       body = JSON.parse(event.body || '{}');
@@ -167,21 +159,13 @@ export const handler = async (event: NetlifyEvent) => {
       });
     }
 
-    // =====================================================
-    // AMBIL DATA KARYAWAN
-    // =====================================================
-    // PENTING:
-    // email_terverifikasi DIHAPUS karena kolom tersebut
-    // memang tidak ada di database.
-    // =====================================================
-
     const {
       data: employee,
       error: employeeError,
     } = await supabase
       .from('karyawan')
       .select(
-        'id,id_karyawan,nama,email,auth_user_id'
+        'id,id_karyawan,nama,email,auth_user_id,email_terverifikasi'
       )
       .eq('id', employeeId)
       .maybeSingle();
@@ -193,6 +177,7 @@ export const handler = async (event: NetlifyEvent) => {
         error: employeeError.message,
         code: employeeError.code,
         details: employeeError.details,
+        hint: employeeError.hint,
       });
     }
 
@@ -218,10 +203,6 @@ export const handler = async (event: NetlifyEvent) => {
       });
     }
 
-    // =====================================================
-    // KONFIRMASI EMAIL DI SUPABASE AUTH
-    // =====================================================
-
     const {
       error: confirmError,
     } = await supabase.auth.admin.updateUserById(
@@ -240,9 +221,25 @@ export const handler = async (event: NetlifyEvent) => {
       });
     }
 
-    // =====================================================
-    // BERHASIL
-    // =====================================================
+    const {
+      error: updateError,
+    } = await supabase
+      .from('karyawan')
+      .update({
+        email_terverifikasi: true,
+      })
+      .eq('id', employee.id);
+
+    if (updateError) {
+      return json(500, {
+        success: false,
+        stage: 'karyawan_update',
+        error: updateError.message,
+        code: updateError.code,
+        details: updateError.details,
+        hint: updateError.hint,
+      });
+    }
 
     return json(200, {
       success: true,
