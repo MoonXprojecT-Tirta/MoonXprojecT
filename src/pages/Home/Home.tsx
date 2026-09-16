@@ -37,6 +37,7 @@ export default function Home({
           <div className="hero-actions">
 
             <button
+              type="button"
               className="hero-primary"
               onClick={onAdminLogin}
             >
@@ -45,6 +46,7 @@ export default function Home({
             </button>
 
             <button
+              type="button"
               className="hero-secondary"
               onClick={onRegister}
             >
@@ -65,17 +67,18 @@ export default function Home({
 
         </div>
 
-        <div
-          <div className="hero-visual">
+        {/* HERO VISUAL */}
+        <div className="hero-visual">
 
-  <div className="brand-hero-image">
-    <img
-      src="/sakura-moon.jpg"
-      alt="MoonXprojecT"
-    />
-  </div>
+          <div className="brand-hero-image">
+            <img
+              src="/sakura-moon.jpg"
+              alt="MoonXprojecT"
+            />
+          </div>
 
-  <div className="visual-glow" />
+          <div className="visual-glow" />
+
           <div className="dashboard-preview">
 
             <div className="preview-top">
@@ -83,7 +86,7 @@ export default function Home({
               <span className="preview-logo">
                 <img
                   src={moonLogo}
-                  alt=""
+                  alt="MoonXprojecT logo"
                 />
               </span>
 
