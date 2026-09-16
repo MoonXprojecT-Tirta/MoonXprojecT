@@ -421,7 +421,7 @@ function Login(p:{email:string;pin:string;setEmail:(v:string)=>void;setPin:(v:st
  return <div className="login-wrap"><div className="login-card"><div className="brand center"><div className="brand-mark"><img src={moonLogo} alt="MoonXprojecT" /></div><div><b>MoonXprojecT</b><small>People Platform</small></div></div><h1>Selamat datang kembali</h1><p>Masuk ke dashboard HR & payroll.</p><form onSubmit={p.onSubmit}><label>Email<input value={p.email} onChange={e=>p.setEmail(e.target.value)} required/></label><label>PIN / Password<input type="password" value={p.pin} onChange={e=>p.setPin(e.target.value)} required/></label>{p.error&&<div className="form-error">{p.error}</div>}<button className="primary full" disabled={p.loading}>{p.loading?'Memeriksa…':'Masuk ke Dashboard'}</button></form><small className="security-note">Gunakan email dan password Supabase Auth yang diberikan HR.</small></div></div>
 }
 function Heading({title,desc,action,onAction}:{title:string;desc:string;action?:string;onAction?:()=>void}){return <div className="page-heading"><div><h1>{title}</h1><p>{desc}</p></div>{action&&<button className="primary" onClick={onAction}>{action}</button>}</div>}
- const active=employees.filter(k=>k.status_aktif!==false).length;
+const active=employees.filter(k=>k.status_aktif!==false).length;
  const inactive=Math.max(0,employees.length-active);
  const absent=Math.max(0,employees.length-present-late);
  const attendanceRate=employees.length?Math.min(100,Math.round((present/Math.max(1,employees.length))*100)):0;
@@ -457,7 +457,7 @@ function Heading({title,desc,action,onAction}:{title:string;desc:string;action?:
    <div className="panel quick executive-quick"><div className="panel-head"><div><span className="eyebrow">SHORTCUTS</span><h2>Akses cepat</h2><p>Masuk langsung ke proses HR utama.</p></div></div><Quick label="Tambah karyawan" icon="users" onClick={()=>onNavigate('employee-add')}/><Quick label="Jadwal kerja" icon="calendar" onClick={()=>onNavigate('schedule')}/><Quick label="Payroll" icon="payroll" onClick={()=>onNavigate('payroll')}/><Quick label="Pengajuan cuti" icon="request" onClick={()=>onNavigate('leave-request')}/></div>
   </div>
  </div>
-}
+
 function Stat({title,value,hint,icon}:{title:string;value:string;hint:string;icon:string}){return <div className="stat-card"><div className="stat-icon"><Icon name={icon}/></div><div><span>{title}</span><strong>{value}</strong><small>{hint}</small></div></div>}
 function Quick({label,icon,onClick}:{label:string;icon:string;onClick:()=>void}){return <button className="quick-action" onClick={onClick}><span className="quick-icon"><Icon name={icon}/></span>{label}<span aria-hidden="true">›</span></button>}
 function AttendanceMini({rows}:{rows:Absensi[]}){return <div className="table-wrap"><table><thead><tr><th>Karyawan</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr></thead><tbody>{rows.length?rows.map((a,i)=><tr key={a.id||i}><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td className="green">{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td><Status value={a.status||'Hadir'}/></td></tr>):<Empty cols={5}/>}</tbody></table></div>}
