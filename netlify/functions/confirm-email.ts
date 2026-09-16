@@ -20,10 +20,12 @@ export const handler = async (event: NetlifyEvent) => {
   }
 
   try {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceRoleKey =
-      process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl =
+  process.env.SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL;
 
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceRoleKey) {
       return {
         statusCode: 500,
