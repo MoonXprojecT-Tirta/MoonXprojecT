@@ -1,4 +1,4 @@
-import React from 'react';
+import ...
 
 export type DashboardRole =
   | 'Super Admin'
