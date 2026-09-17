@@ -480,12 +480,11 @@ function LoginScreen({
           </span>
 
           <h1>
-            Masuk ke MoonXprojecT
+             MoonXprojecT
           </h1>
 
           <p>
-            Gunakan akun Anda untuk mengakses sistem
-            sesuai jabatan dan kewenangan.
+          
           </p>
 
         </div>
@@ -596,8 +595,7 @@ function LoginScreen({
             </strong>
 
             <small>
-              Akses otomatis ditentukan berdasarkan
-              role akun Anda.
+              
             </small>
 
           </div>
