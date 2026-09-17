@@ -15,6 +15,18 @@ const json = (statusCode: number, data: unknown) => ({
   body: JSON.stringify(data),
 });
 
+function generateTemporaryPassword() {
+  const chars =
+    'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+
+  const random = Array.from(
+    crypto.getRandomValues(new Uint8Array(10)),
+    (value) => chars[value % chars.length],
+  ).join('');
+
+  return `Mx!${random}`;
+}
+
 export const handler = async (event: NetlifyEvent) => {
   if (event.httpMethod !== 'POST') {
     return json(405, {
@@ -63,8 +75,12 @@ export const handler = async (event: NetlifyEvent) => {
           autoRefreshToken: false,
           persistSession: false,
         },
-      }
+      },
     );
+
+    /* =====================================================
+       VERIFIKASI AKUN HR / ADMIN
+       ===================================================== */
 
     const {
       data: authData,
@@ -86,7 +102,8 @@ export const handler = async (event: NetlifyEvent) => {
     if (!currentEmail) {
       return json(403, {
         success: false,
-        error: 'Email akun HR tidak ditemukan.',
+        error:
+          'Email akun HR/Admin tidak ditemukan.',
       });
     }
 
@@ -118,7 +135,7 @@ export const handler = async (event: NetlifyEvent) => {
     if (hrUser.status !== 'Aktif') {
       return json(403, {
         success: false,
-        error: 'Akun HR Anda belum aktif.',
+        error: 'Akun HR/Admin Anda belum aktif.',
       });
     }
 
@@ -132,9 +149,13 @@ export const handler = async (event: NetlifyEvent) => {
       return json(403, {
         success: false,
         error:
-          'Role Anda tidak memiliki izin untuk mengonfirmasi email karyawan.',
+          'Role Anda tidak memiliki izin untuk mengaktifkan akun karyawan.',
       });
     }
+
+    /* =====================================================
+       REQUEST
+       ===================================================== */
 
     let body: {
       employee_id?: string;
@@ -155,9 +176,14 @@ export const handler = async (event: NetlifyEvent) => {
     if (!employeeId) {
       return json(400, {
         success: false,
-        error: 'ID karyawan tidak ditemukan.',
+        error:
+          'ID karyawan tidak ditemukan.',
       });
     }
+
+    /* =====================================================
+       AMBIL DATA KARYAWAN
+       ===================================================== */
 
     const {
       data: employee,
@@ -165,7 +191,7 @@ export const handler = async (event: NetlifyEvent) => {
     } = await supabase
       .from('karyawan')
       .select(
-        'id,id_karyawan,nama,email,auth_user_id,email_terverifikasi'
+        'id,id_karyawan,nama,email,auth_user_id,email_terverifikasi',
       )
       .eq('id', employeeId)
       .maybeSingle();
@@ -184,72 +210,186 @@ export const handler = async (event: NetlifyEvent) => {
     if (!employee) {
       return json(404, {
         success: false,
-        error: 'Data karyawan tidak ditemukan.',
+        error:
+          'Data karyawan tidak ditemukan.',
       });
     }
 
-    if (!employee.email) {
-      return json(400, {
-        success: false,
-        error: 'Karyawan belum memiliki email.',
-      });
-    }
+    const employeeEmail =
+      employee.email?.trim().toLowerCase() || '';
 
-    if (!employee.auth_user_id) {
+    if (!employeeEmail) {
       return json(400, {
         success: false,
         error:
-          'Akun login karyawan belum terhubung.',
+          'Karyawan belum memiliki email.',
       });
     }
 
+    /* =====================================================
+       CARI AKUN AUTH YANG SUDAH ADA
+       ===================================================== */
+
+    let authUserId =
+      employee.auth_user_id || null;
+
+    let createdNow = false;
+
+    let temporaryPassword: string | null =
+      null;
+
+    if (!authUserId) {
+      const {
+        data: usersData,
+        error: usersError,
+      } = await supabase.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+
+      if (usersError) {
+        return json(500, {
+          success: false,
+          stage: 'auth_list_users',
+          error: usersError.message,
+        });
+      }
+
+      const existingUser =
+        usersData.users.find(
+          (user) =>
+            user.email?.trim().toLowerCase() ===
+            employeeEmail,
+        );
+
+      if (existingUser) {
+        authUserId = existingUser.id;
+      }
+    }
+
+    /* =====================================================
+       BUAT AKUN SUPABASE AUTH OTOMATIS
+       ===================================================== */
+
+    if (!authUserId) {
+      temporaryPassword =
+        generateTemporaryPassword();
+
+      const {
+        data: createdUser,
+        error: createError,
+      } =
+        await supabase.auth.admin.createUser({
+          email: employeeEmail,
+          password: temporaryPassword,
+          email_confirm: true,
+          user_metadata: {
+            nama: employee.nama || '',
+          },
+        });
+
+      if (createError || !createdUser.user) {
+        return json(500, {
+          success: false,
+          stage: 'auth_create',
+          error:
+            createError?.message ||
+            'Gagal membuat akun login karyawan.',
+        });
+      }
+
+      authUserId =
+        createdUser.user.id;
+
+      createdNow = true;
+    }
+
+    /* =====================================================
+       PASTIKAN EMAIL TERKONFIRMASI
+       ===================================================== */
+
     const {
       error: confirmError,
-    } = await supabase.auth.admin.updateUserById(
-      employee.auth_user_id,
-      {
-        email_confirm: true,
-      }
-    );
+    } =
+      await supabase.auth.admin.updateUserById(
+        authUserId,
+        {
+          email_confirm: true,
+        },
+      );
 
     if (confirmError) {
       return json(500, {
         success: false,
-        stage: 'auth_update',
+        stage: 'auth_confirm',
         error: confirmError.message,
         status: confirmError.status,
       });
     }
 
-    const {
-      error: updateError,
-    } = await supabase
-      .from('karyawan')
-      .update({
-        email_terverifikasi: true,
-      })
-      .eq('id', employee.id);
+    /* =====================================================
+       HUBUNGKAN AUTH DENGAN KARYAWAN
+       ===================================================== */
 
-    if (updateError) {
+    const {
+      error: employeeUpdateError,
+    } =
+      await supabase
+        .from('karyawan')
+        .update({
+          auth_user_id: authUserId,
+          email_terverifikasi: true,
+          status_aktif: true,
+          status_karyawan: 'Aktif',
+        })
+        .eq('id', employee.id);
+
+    if (employeeUpdateError) {
       return json(500, {
         success: false,
         stage: 'karyawan_update',
-        error: updateError.message,
-        code: updateError.code,
-        details: updateError.details,
-        hint: updateError.hint,
+        error:
+          employeeUpdateError.message,
+        code: employeeUpdateError.code,
+        details:
+          employeeUpdateError.details,
+        hint: employeeUpdateError.hint,
+      });
+    }
+
+    /* =====================================================
+       RESPONSE
+       ===================================================== */
+
+    if (createdNow) {
+      return json(200, {
+        success: true,
+        account_created: true,
+        message:
+          `Akun ${employee.nama} berhasil dibuat dan diaktifkan.`,
+        employee_id: employee.id,
+        id_karyawan:
+          employee.id_karyawan,
+        nama: employee.nama,
+        email: employee.email,
+        auth_user_id: authUserId,
+        temporary_password:
+          temporaryPassword,
       });
     }
 
     return json(200, {
       success: true,
+      account_created: false,
       message:
-        `Email ${employee.email} berhasil dikonfirmasi.`,
+        `Akun ${employee.nama} berhasil dihubungkan dan diaktifkan.`,
       employee_id: employee.id,
-      id_karyawan: employee.id_karyawan,
+      id_karyawan:
+        employee.id_karyawan,
       nama: employee.nama,
+      email: employee.email,
+      auth_user_id: authUserId,
     });
-
   } catch (error: unknown) {
     return json(500, {
       success: false,
