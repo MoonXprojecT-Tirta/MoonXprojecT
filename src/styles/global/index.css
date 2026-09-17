@@ -28,9 +28,14 @@ html {
 }
 
 body {
+  margin: 0;
+  background-image: url('/moon-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #ffffff;
   min-height: 100vh;
-  color: #10213f;
-  background: #f4f7fb;
 }
 
 button,
@@ -413,4 +418,14 @@ button:disabled {
   height: 56px;
   object-fit: contain;
   display: block;
+}
+/* Efek Kaca Buram untuk Container Halaman & Kartu */
+.page-container {
+  background: rgba(15, 23, 42, 0.65); /* Warna gelap semi-transparan */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
