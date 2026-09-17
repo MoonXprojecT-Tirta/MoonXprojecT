@@ -18,24 +18,7 @@ import RecruitmentATSv25 from '../recruitment/RecruitmentATSv25';
 import EnterpriseRoadmapV26V35 from '../enterprise/EnterpriseRoadmapV26V35';
 import moonLogo from '../../../assets/moon-logo.svg';
 
-type Karyawan = {
-  id: string;
-  id_karyawan?: string;
-  nama: string;
-  jabatan?: string;
-  email?: string;
-  email_terverifikasi?: boolean;
-  auth_user_id?: string;
-  no_telp?: string;
-  alamat_rumah?: string;
-  gaji_pokok?: number;
-  nik_ktp?: string;
-  departemen?: string;
-  status_aktif?: boolean;
-  tanggal_masuk?: string;
-  status_karyawan?: string;
-  role?: string;
-};type Absensi = {
+type Karyawan};type Absensi = {
   id: string; karyawan_id?: string; id_karyawan?: string; nama?: string; jabatan?: string;
   tanggal?: string; jam_masuk?: string; jam_pulang?: string; total_jam?: string;
   status?: string; lokasi?: string; foto?: string; selfie_masuk?: string;
