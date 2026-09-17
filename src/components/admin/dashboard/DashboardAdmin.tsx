@@ -38,42 +38,32 @@ type Karyawan = {
   email_terverifikasi?: boolean;
 };
 
-type Absensi = {
-  id?: string;
-  karyawan_id?: string;
+interface Absensi {
+  id?: string | number;
+  id_karyawan?: string;
+  nama?: string;
   tanggal?: string;
   jam_masuk?: string;
   jam_pulang?: string;
+  total_jam?: string;
   status?: string;
-  keterangan?: string;
   lokasi?: string;
-  selfie_url?: string;
-  created_at?: string;
-};
+  lokasi_masuk?: string;
+  keterlambatan_menit?: number | string;
+  lembur_menit?: number | string;
+  foto?: string;
+  selfie_masuk?: string;
+}
+type MenuKey = 
+  | 'overview' | 'employees' | 'employee-360' | 'employee-add' | 'organization'
+  | 'attendance' | 'attendance-today' | 'late' | 'leave' | 'overtime' | 'selfie'
+  | 'schedule' | 'shift' | 'holiday' | 'leave-request' | 'leave-balance' | 'approvals'
+  | 'payroll' | 'production-hr' | 'payroll-engine' | 'payroll-production-v22' | 'payroll-components' | 'payroll-overtime' | 'payslip'
+  | 'performance' | 'kpi' | 'recruitment-v25' | 'recruitment' | 'candidates'
+  | 'reports' | 'settings' | 'roles' | 'audit' | 'notifications' | 'system-health'
+  | 'enterprise-v20' | 'security-v21' | 'payroll-indonesia-v23'
+  | `enterprise-v${26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35}`;const money=(n:number)=>rupiah(n);
 
-type MenuKey =
-  | 'overview'
-  | 'employees'
-  | 'employee-360'
-  | 'employee-add'
-  | 'organization'
-  | 'attendance'
-  | 'attendance-today'
-  | 'late'
-  | 'leave'
-  | 'overtime'
-  | 'selfie'
-  | 'schedule'
-  | 'shift'
-  | 'holiday'
-  | 'leave-request'
-  | 'leave-balance'
-  | 'payroll'
-  | 'payroll-components'
-  | 'payroll-overtime'
-  | 'payslip'
-  | 'hr-operations';
-const money=(n:number)=>rupiah(n);
 const isoToday=()=>new Date().toISOString().slice(0,10);
 const menuGroups: {title:string;items: readonly [MenuKey,string,string][]}[] = [
  {title:'UTAMA',items:[['overview','Overview','home']]},
