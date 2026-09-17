@@ -55,15 +55,14 @@ interface Absensi {
   selfie_masuk?: string;
 }
 type MenuKey = 
-  | 'overview' | 'employees' | 'employee-360' | 'employee-add' | 'organization'
+  | 'overview' | 'employees' | 'employee-360' | 'employee-add' | 'organization' | 'hr-operations'
   | 'attendance' | 'attendance-today' | 'late' | 'leave' | 'overtime' | 'selfie'
   | 'schedule' | 'shift' | 'holiday' | 'leave-request' | 'leave-balance' | 'approvals'
   | 'payroll' | 'production-hr' | 'payroll-engine' | 'payroll-production-v22' | 'payroll-components' | 'payroll-overtime' | 'payslip'
   | 'performance' | 'kpi' | 'recruitment-v25' | 'recruitment' | 'candidates'
   | 'reports' | 'settings' | 'roles' | 'audit' | 'notifications' | 'system-health'
   | 'enterprise-v20' | 'security-v21' | 'payroll-indonesia-v23'
-  | `enterprise-v${26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35}`;const money=(n:number)=>rupiah(n);
-
+  | `enterprise-v${26 | 27 | 28 | 29 | 30 | 31 | 32 | 33 | 34 | 35}`;
 const isoToday=()=>new Date().toISOString().slice(0,10);
 const menuGroups: {title:string;items: readonly [MenuKey,string,string][]}[] = [
  {title:'UTAMA',items:[['overview','Overview','home']]},
@@ -476,7 +475,12 @@ function AttendanceModule({type,data,onRefresh,onExport}:{type:MenuKey;data:Abse
  const del=async(id:string)=>{if(confirm('Hapus record absensi ini?')){const {error}=await supabase.from('absensi').delete().eq('id',id);if(error)alert(error.message);else onRefresh()}};
  return <Branch title="Absensi" desc="Rekap, input manual, review keterlambatan, lembur, dan selfie." items={items.map(([key,label,icon])=>({key,label,icon}))} tab={tab} setTab={setTab} action={tab==='summary'?'＋ Input Absensi': 'Export CSV'} onAction={tab==='summary'?()=>setOpen(true):onExport}>
   <div className="stat-grid three"><Stat title="Record" value={String(rows.length)} hint="Data ditampilkan" icon="calendar"/><Stat title="Hadir" value={String(rows.filter(a=>/hadir|tepat|terlambat/i.test(a.status||'')).length)} hint="Kehadiran" icon="check"/><Stat title="Perlu Review" value={String(rows.filter(a=>Number(a.lembur_menit||0)>0||Number(a.keterlambatan_menit||0)>0).length)} hint="Lembur / terlambat" icon="alert"/></div>
-  <div className="panel table-panel"><div className="table-wrap"><table><thead><tr><th>Foto</th><th>Karyawan</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Total</th><th>Status</th><th>Lokasi</th><th>Aksi</th></tr></thead><tbody>{rows.length?rows.map((a,i)=><tr key={a.id||i}><td>{a.foto||a.selfie_masuk?<img className="selfie" src={a.foto||a.selfie_masuk}/>:<div className="selfie blank">—</div>}</td><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td>{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td>{a.total_jam||'-'}</td><td><Status value={a.status||'-'}/></td><td>{a.lokasi||a.lokasi_masuk||'-'}</td><td>{a.id&&<button className="danger-text" onClick={()=>del(a.id)}>Hapus</button>}</td></tr>):<Empty cols={9}/>}</tbody></table></div></div>
+  <div className="panel table-panel"><div className="table-wrap"><table><thead><tr><th>Foto</th><th>Karyawan</th><th>Tanggal</th><th>Masuk</th><th>Pulang</th><th>Total</th><th>Status</th><th>Lokasi</th><th>Aksi</th></tr></thead><tbody>{rows.length?rows.map((a,i)=><tr key={a.id||i}><td>{a.foto||a.selfie_masuk?<img className="selfie" src={a.foto||a.selfie_masuk}/>:<div className="selfie blank">—</div>}</td><td><b>{a.nama||'-'}</b><small>{a.id_karyawan||''}</small></td><td>{a.tanggal||'-'}</td><td>{a.jam_masuk||'-'}</td><td>{a.jam_pulang||'-'}</td><td>{a.total_jam||'-'}</td><td><Status value={a.status||'-'}/></td><td>{a.lokasi||a.lokasi_masuk||'-'}</td><td>{a.id !== undefined && (
+  <button className="danger-text" onClick={() => del(String(a.id))}>
+    Hapus
+  </button>
+)}
+  </td></tr>):<Empty cols={9}/>}</tbody></table></div></div>
   {open&&<SimpleModal title="Input Absensi Manual" onClose={()=>setOpen(false)} onSave={save}><label>Karyawan<select required value={f.id_karyawan} onChange={e=>setF({...f,id_karyawan:e.target.value})}><option value="">Pilih karyawan</option>{employees.map(k=><option key={k.id_karyawan} value={k.id_karyawan}>{k.nama} — {k.id_karyawan}</option>)}</select></label><label>Tanggal<input type="date" value={f.tanggal} onChange={e=>setF({...f,tanggal:e.target.value})}/></label><label>Jam Masuk<input type="time" value={f.jam_masuk} onChange={e=>setF({...f,jam_masuk:e.target.value})}/></label><label>Jam Pulang<input type="time" value={f.jam_pulang} onChange={e=>setF({...f,jam_pulang:e.target.value})}/></label><label>Status<select value={f.status} onChange={e=>setF({...f,status:e.target.value})}><option>Hadir</option><option>Terlambat</option><option>Izin</option><option>Sakit</option><option>Alpa</option></select></label><label>Lokasi<input value={f.lokasi} onChange={e=>setF({...f,lokasi:e.target.value})}/></label><label>Keterangan<textarea value={f.keterangan} onChange={e=>setF({...f,keterangan:e.target.value})}/></label></SimpleModal>}
  </Branch>
 }
