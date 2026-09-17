@@ -402,3 +402,17 @@ button:disabled {
     font-size: 10px;
   }
 }
+.unified-logo {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moon-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  display: block;
+}
