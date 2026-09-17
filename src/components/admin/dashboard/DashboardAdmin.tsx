@@ -91,31 +91,22 @@ export default function DashboardAdmin(){
  useEffect(()=>{if(logged)refresh()},[logged]);
  useEffect(()=>{const read=()=>{const candidate=location.hash.replace('#/','') as MenuKey;if(candidate&&menuGroups.flatMap(g=>g.items).some(x=>x[0]===candidate)&&menuPermissionForRole(candidate,userRole,dbPerms))setMenu(candidate)};read();window.addEventListener('hashchange',read);return()=>window.removeEventListener('hashchange',read)},[userRole,dbPerms]);
  const navigate=(next:MenuKey)=>{setMenu(next);location.hash=`/${next}`;if(window.innerWidth<900)setSidebar(false)};
-  async function confirmEmployeeEmail(employee: Karyawan) {
+  async function confirmEmployeeEmail(
+  employee: Karyawan,
+) {
   if (!employee.email) {
-    setError('Karyawan belum memiliki email.');
-    return;
-  }
-
-  if (!employee.auth_user_id) {
     setError(
-      'Akun login karyawan belum terhubung dengan data karyawan.'
-    );
-    return;
-  }
-
-  if (employee.email_terverifikasi) {
-    setToast(
-      `Email ${employee.email} sudah terverifikasi.`
+      'Karyawan belum memiliki email.',
     );
     return;
   }
 
   const confirmed = window.confirm(
-    `Konfirmasi email karyawan berikut?\n\n` +
-    `Nama: ${employee.nama}\n` +
-    `ID: ${employee.id_karyawan || '-'}\n` +
-    `Email: ${employee.email}`
+    `Aktifkan akun karyawan?\n\n` +
+      `Nama: ${employee.nama}\n` +
+      `ID: ${employee.id_karyawan || '-'}\n` +
+      `Email: ${employee.email}\n\n` +
+      `Jika akun belum ada, sistem akan otomatis membuat akun Supabase Auth.`,
   );
 
   if (!confirmed) {
@@ -124,11 +115,13 @@ export default function DashboardAdmin(){
 
   try {
     setError('');
+    setLoading(true);
 
     const {
       data: sessionData,
       error: sessionError,
-    } = await supabase.auth.getSession();
+    } =
+      await supabase.auth.getSession();
 
     if (sessionError) {
       throw sessionError;
@@ -139,31 +132,34 @@ export default function DashboardAdmin(){
 
     if (!accessToken) {
       throw new Error(
-        'Sesi login HR tidak ditemukan. Silakan login ulang.'
+        'Sesi login HR/Admin tidak ditemukan. Silakan login ulang.',
       );
     }
-
-    setLoading(true);
 
     const response = await fetch(
       '/.netlify/functions/confirm-email',
       {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type':
+            'application/json',
           Authorization:
             `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           employee_id: employee.id,
         }),
-      }
+      },
     );
 
     let result: {
       success?: boolean;
+      account_created?: boolean;
       message?: string;
       error?: string;
+      temporary_password?: string;
+      email?: string;
+      nama?: string;
     } = {};
 
     try {
@@ -175,14 +171,34 @@ export default function DashboardAdmin(){
     if (!response.ok) {
       throw new Error(
         result.error ||
+          result.message ||
+          'Gagal membuat akun karyawan.',
+      );
+    }
+
+    if (
+      result.success &&
+      result.account_created &&
+      result.temporary_password
+    ) {
+      window.alert(
+        `AKUN KARYAWAN BERHASIL DIBUAT\n\n` +
+          `Nama: ${result.nama || employee.nama}\n` +
+          `Email: ${result.email || employee.email}\n\n` +
+          `PASSWORD SEMENTARA:\n` +
+          `${result.temporary_password}\n\n` +
+          `Berikan email dan password ini kepada karyawan.`,
+      );
+    } else {
+      window.alert(
         result.message ||
-        'Konfirmasi email gagal.'
+          `Akun ${employee.nama} berhasil diaktifkan.`,
       );
     }
 
     setToast(
       result.message ||
-      `Email ${employee.email} berhasil dikonfirmasi.`
+        'Akun karyawan berhasil diaktifkan.',
     );
 
     await refresh();
@@ -190,7 +206,7 @@ export default function DashboardAdmin(){
     const message =
       error instanceof Error
         ? error.message
-        : 'Konfirmasi email gagal.';
+        : 'Gagal membuat akun karyawan.';
 
     setError(message);
   } finally {
