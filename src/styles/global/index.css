@@ -86,12 +86,11 @@ button:disabled {
    LOGIN CARD
    ========================================================= */
 
-.unified-.login-card {
+.unified-login-card {
   width: 380px;
   max-width: calc(100% - 32px);
   padding: 28px;
   box-sizing: border-box;
-}
   box-shadow:
     0 24px 60px rgba(15, 35, 65, 0.10),
     0 4px 16px rgba(15, 35, 65, 0.04);
@@ -103,7 +102,6 @@ button:disabled {
   align-items: center;
   gap: 18px;
 }
-
 /* =========================================================
    BRAND
    ========================================================= */
