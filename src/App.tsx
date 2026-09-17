@@ -2,13 +2,14 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { isSupabaseConfigured, supabase } from './lib/supabase/client';
 import { signIn } from './lib/auth';
 
+import moonLogo from './assets/moon-logo.svg';
+
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import EmployeeRegister from './pages/EmployeeRegister/EmployeeRegister';
 import EmployeePortal from './pages/EmployeePortal/EmployeePortal';
 
 import ErrorBoundary from './components/common/ErrorBoundary';
 import './styles/global/index.css';
-
 type View = 'login' | 'admin' | 'employee' | 'register';
 
 type HrRole =
@@ -331,8 +332,12 @@ export default function App() {
         <div className="unified-login-card compact">
 
           <div className="unified-logo">
-            M
-          </div>
+  <img
+    src={moonLogo}
+    alt="MoonXprojecT"
+    className="moon-logo"
+  />
+</div>
 
           <div className="unified-loading">
             Memeriksa sesi keamanan...
@@ -596,4 +601,18 @@ function LoginScreen({
 
     </main>
   );
+}
+.unified-logo {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.moon-logo {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  display: block;
 }
