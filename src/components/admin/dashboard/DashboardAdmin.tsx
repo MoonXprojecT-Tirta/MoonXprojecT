@@ -2,7 +2,7 @@ import PayrollIndonesiaV23 from '../payroll/PayrollIndonesiaV23';
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode, type CSSProperties } from 'react';
 import { isSupabaseConfigured, supabase } from '../../../lib/supabase/client';
 import { signIn, signOut } from '../../../lib/auth';
-import { rupiah } from '../../../lib/hris';
+import { rupiah as money } from '../../../lib/hris';
 import { canDelete, canWrite, hasPermission } from '../../../lib/security';
 import '../../../styles/admin/admin.css';
 import MasterData from '../employee/MasterData';
