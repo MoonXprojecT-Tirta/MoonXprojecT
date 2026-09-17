@@ -18,17 +18,61 @@ import RecruitmentATSv25 from '../recruitment/RecruitmentATSv25';
 import EnterpriseRoadmapV26V35 from '../enterprise/EnterpriseRoadmapV26V35';
 import moonLogo from '../../../assets/moon-logo.svg';
 
-type Karyawan};type Absensi = {
-  id: string; karyawan_id?: string; id_karyawan?: string; nama?: string; jabatan?: string;
-  tanggal?: string; jam_masuk?: string; jam_pulang?: string; total_jam?: string;
-  status?: string; lokasi?: string; foto?: string; selfie_masuk?: string;
-  keterlambatan_menit?: number; lembur_menit?: number; lokasi_masuk?: string;
+type Karyawan = {
+  id: string;
+  id_karyawan?: string;
+  nama: string;
+  jabatan?: string;
+  departemen?: string;
+  email?: string;
+  no_telp?: string;
+  alamat_rumah?: string;
+  nik_ktp?: string;
+  gaji_pokok?: number;
+  tanggal_lahir?: string;
+  tanggal_masuk?: string;
+  status_aktif?: boolean;
+  status_karyawan?: string;
+  role?: string;
+  auth_user_id?: string | null;
+  email_terverifikasi?: boolean;
 };
-type MenuKey =
- | 'overview'|'employees'|'employee-360'|'employee-add'|'organization'|'attendance'|'attendance-today'|'late'|'leave'|'overtime'|'selfie'
- | 'schedule'|'shift'|'holiday'|'leave-request'|'leave-balance'|'payroll'|'payroll-components'|'payroll-overtime'|'payslip'
- | 'hr-operations'|'production-hr'|'payroll-engine'|'performance'|'kpi'|'recruitment'|'candidates'|'reports'|'settings'|'roles'|'audit'|'approvals'|'notifications'|'system-health'|'security-v21'|'payroll-production-v22'|'recruitment-v25'|'enterprise-v20'|'enterprise-v26'|'enterprise-v27'|'enterprise-v28'|'enterprise-v29'|'enterprise-v30'|'enterprise-v31'|'enterprise-v32'|'enterprise-v33'|'enterprise-v34'|'enterprise-v35'|'payroll-indonesia-v23';
 
+type Absensi = {
+  id?: string;
+  karyawan_id?: string;
+  tanggal?: string;
+  jam_masuk?: string;
+  jam_pulang?: string;
+  status?: string;
+  keterangan?: string;
+  lokasi?: string;
+  selfie_url?: string;
+  created_at?: string;
+};
+
+type MenuKey =
+  | 'overview'
+  | 'employees'
+  | 'employee-360'
+  | 'employee-add'
+  | 'organization'
+  | 'attendance'
+  | 'attendance-today'
+  | 'late'
+  | 'leave'
+  | 'overtime'
+  | 'selfie'
+  | 'schedule'
+  | 'shift'
+  | 'holiday'
+  | 'leave-request'
+  | 'leave-balance'
+  | 'payroll'
+  | 'payroll-components'
+  | 'payroll-overtime'
+  | 'payslip'
+  | 'hr-operations';
 const money=(n:number)=>rupiah(n);
 const isoToday=()=>new Date().toISOString().slice(0,10);
 const menuGroups: {title:string;items: readonly [MenuKey,string,string][]}[] = [
