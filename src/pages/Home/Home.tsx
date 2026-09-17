@@ -10,7 +10,16 @@ export default function Home({
   onAdminLogin,
   onRegister,
 }: HomeProps) {
+  export default function Home() {
   return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      {/* Bungkus kartu login Anda di sini */}
+      <div className="page-container w-full max-w-md">
+        {/* Konten/Form Login Anda */}
+      </div>
+    </div>
+  );
+}
     <main className="home-page">
 
       <section className="hero-section">
